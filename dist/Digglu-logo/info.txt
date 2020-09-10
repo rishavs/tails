@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: Judson-Regular
+font link: https://fonts.google.com/specimen/Judson
+font author: Daniel Johnson
+font author site: http://danieljohnson.name/
+
+
+icon designer: libberry
+icon designer link: /libberry
+        
+{"bg-gradient-0":"#32142D","bg-gradient-1":"#32142D","icon":"#ffffff","font":"#ffffff","slogan":"#ffffff"}
+      
