@@ -25,9 +25,9 @@ module.exports = {
                     dark: "#CCCCCC"
                 },
                 background: {
-                    base: "#F6FDFC",
+                    base: "#FAFAFA",
                     light: "#FFFFFF",
-                    dark: "#CCCCCC"
+                    dark: "#E5E5E5"
                 },
                 fontcolor: {
                     base: "#1B5790",
