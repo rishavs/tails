@@ -13,6 +13,8 @@
     <meta property="og:image" content="">
 
     <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
     <!-- <link rel="stylesheet" href="css/main.css"> -->
 
     <meta name="theme-color" content="#fafafa">
@@ -22,7 +24,7 @@
 
     <!-- Add your site or application content here -->
     <nav class="bg-primary-base">
-        <div class="container mx-auto flex items-center justify-between h-20">
+        <div class="mx-16 flex items-center justify-between h-20">
 
             <!-- Logo -->
             <img class="h-12" src="/logo2.png" alt="Site logo" />
@@ -42,11 +44,13 @@
 
             <!-- Login button -->
             <a href="#"
-                class="px-3 py-2 rounded-md text-sm font-medium text-white hover:text-white hover:bg-primary-dark focus:outline-none focus:text-white focus:bg-gray-700">Login</a>
+                class="px-3 py-2 rounded-md text-sm font-medium text-white hover:text-white hover:bg-primary-dark focus:outline-none focus:text-white focus:bg-gray-700">
+                Login
+            </a>
 
             <!-- Signup Button -->
             <button
-                class="border-2 text-white rounded font-lg h-12 px-8 font-semibold hover:bg-primary-light focus:outline-none focus:shadow-outline">
+                class="border-2 text-gray-800 rounded font-lg h-12 px-8 font-semibold bg-yellow-400 hover:bg-primary-light focus:outline-none focus:shadow-outline">
                 Signup
             </button>
         </div>
@@ -55,7 +59,7 @@
 
 
     <header class="bg-secondary-base shadow">
-        <div class="container mx-auto">
+        <div class="mx-16">
             <div class="py-2 flex items-baseline space-x-4">
                 <a href="#"
                     class="px-3 py-2 rounded-md text-sm font-medium text-white bg-primary-base focus:outline-none focus:text-white focus:bg-gray-700">All</a>
@@ -72,61 +76,128 @@
             </div>
         </div>
     </header>
-    <main class="bg-background-base">
+    <main class="bg-background-base" style="">
 
         <!-- Two columns -->
-        <div class="container mx-auto flex">
+        <div class="mx-16 flex">
 
             <!-- POsts column -->
-            <div class="w-2/3 py-4 ">
+            <div class="w-2/3 py-2">
 
                 <!-- post card -->
-                <div class="flex bg-white hover:shadow-lg rounded items-start h-48 static border border-background-dark transition delay-500 duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow">
+                <div
+                    class="flex bg-white shadow rounded items-start h-48 static border ml-2 mt-2  border-background-dark transition delay-500 duration-300 ease-in-out hover:shadow-2xl">
                     <!--horizantil margin is just for display-->
-                    <img class="w-1/3 h-48 rounded-l " src="https://picsum.photos/400/400" alt="avatar">
+                    <img class="w-1/3 h-48 rounded-l"
+                        style="clip-path: polygon(0 0, 80% 0%, 98% 100%, 0% 100%);  shape-outside: ellipse(closest-side farthest-side at 50% 50%);"
+                        src="https://picsum.photos/400/400" alt="avatar">
 
-                    <div class="absolute bg-yellow-500 shadow text-center align-middle rounded h-6 w-16 -mx-2 my-2 border-2 divide-y ">
-                       <p class="text-xs text-gray-800"> Trending</p>
+                    <div
+                        class="absolute bg-primary-base shadow text-center align-middle rounded h-6 w-20 -mx-2 my-8 border-2 divide-y ">
+                        <p class="text-xs text-white"> Trending</p>
                     </div>
 
-                    <div class="absolute bg-yellow-400 shadow text-center align-middle rounded h-16 w-16 -mx-2 my-10 border-2 divide-y ">
-                       <p class="text-2xl font-extrabold text-gray-800 text-opacity-100">3662</p>
-                       <p class="text-xs text-white text-gray-800"> diggs</p>
+                    <div
+                        class="absolute bg-yellow-400 shadow text-center align-middle rounded h-16 w-20 -mx-2 my-16 border-2 border-white divide-y divide-white">
+                        <p class="text-2xl font-extrabold text-gray-800 text-opacity-100">3662</p>
+                        <p class="text-xs text-white text-gray-800"> diggs</p>
                     </div>
 
-                    <div class=" px-4 py-6">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900 -mt-1">How does the complexity of living
-                                structures compare with the complexity of artificial structures?</h2>
-                            <small class="text-sm text-gray-700">22h ago</small>
+                    <div class="py-4">
+                        <div class="h-auto ">
+                            <div class="flex">
+                                <img class="w-10 h-10 p-1 mx-2 border rounded" src="favicon.png" />
+                                <p class="font-semibold">CrSFML provides a simple HTTP client class which you can use to
+                                    communicate with HTTP servers. </p>
+
+                            </div>
+                            <span class="text-xs text-gray-600"> by Rishav Sharan</span> .
+                            <span class="text-xs text-gray-600"> 2 hours ago</span> .
+                            <span class="text-xs text-gray-600"> 200 likes</span> .
+                            <span class="text-xs text-gray-600"> 200 comments</span>
+                            <p class="text-sm text-gray-700"><i>This is just a dummy text to see if tilting the image
+                                    works well. will have to do the entire content part of the card from scratch. Also
+                                    we can put a div on the image (also put the image in the div) with opacity high and
+                                    on hover remove opacity fr the "clearing" effct on hover
+                                </i>
+                            </p>
+
+
                         </div>
-                        <p class="text-gray-700">Joined 12 SEP 2012. </p>
-                        <p class="mt-3 text-gray-700 text-sm">
-                            Lorem ipsum, dolor sit amet conse. Saepe optio minus rem dolor sit amet!
-                        </p>
-                        <div class="mt-4 flex items-center">
-                            <div class="flex mr-2 text-gray-700 text-sm mr-3">
-                                <svg fill="none" viewBox="0 0 24 24" class="w-4 h-4 mr-1" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                <span>12</span>
+
+                        <div class="h-8 bg-background-base">
+                            <span class="text-xs text-gray-600"> 2 hours ago</span> &nbsp . &nbsp
+                            <span class="text-xs text-gray-600"> 200 likes</span> &nbsp . &nbsp
+                            <span class="text-xs text-gray-600"> 200 comments</span>
+                            <a href="#" class="underline">[Goto Article]</a>
+                            <a href="#" class="underline">[Goto Comments (200) ]</a>
+                            <button
+                                class="border border-primary-base text-gray-800 rounded font-lg h-8 px-4 font-semibold">
+                                Signup
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 2nd full with post variant -->
+                <div class="h-48 mt-2 ml-2 border border-gray-400 static rounded shadow">
+                    <img class="absolute w-1/5 h-48 rounded-l"
+                        style="clip-path: polygon(0 0, 80% 0%, 98% 100%, 0% 100%); " src="https://picsum.photos/400/400"
+                        alt="avatar">
+
+                    <div
+                        class="absolute bg-primary-base text-center align-middle rounded h-6 w-20 -mx-2 my-8 border-2 divide-y ">
+                        <p class="text-xs text-white"> Trending</p>
+                    </div>
+
+                    <div
+                        class="absolute bg-yellow-400 text-center align-middle rounded h-16 w-20 -mx-2 my-16 border-2 border-white divide-y divide-white">
+                        <p class="text-2xl font-extrabold text-gray-800 text-opacity-100">3662</p>
+                        <p class="text-xs text-gray-800"> diggs</p>
+                    </div>
+
+                    <div class="h-32 border-b-2 flex">
+                        <div class="w-1/3 dbg" style="shape-outside: polygon(0 0, 80% 0%, 98% 100%, 0% 100%)"></div>
+                        <div class="flex w-2/3 justify-between dbg">
+                            <div>
+                                <div class="h-48 w-48 float-left"
+                                    style="shape-outside: polygon(0 0, 70% 0%, 98% 100%, 0% 100%)"></div>
+
+                                <div class ="h-1/5">
+                                    <p> CrSFML provides a simple HTTP client class which you can use to communicate
+                                        with HTTP servers.</p>
+                                </div>
+                                <div>
+                                    <p>This is just a dummy text to see if tilting the image works well. will have
+                                        to do
+                                        the entire content part of the card from scratch. Also we can put a div on
+                                        the
+                                        image (also put the image in the div) with opacity high and on hover remove
+                                        opacity for the "clearing" effct on hover </p>
+                                </div>
+                                <div>
+                                    by Rishv Sharan, 3 hours ago
+                                </div>
+                            </div>>
+                        </div>
+                    </div>
+                    <div class="h-16 bg-background-dark border border-b-2 flex">
+                        <div class="w-1/3"></div>
+                        <div class="flex w-2/3 justify-between">
+                            <div class="bg-grey-lighter flex items-center justify-between text-gray-700 font-bold">
+                                <!-- <span class="text-xs text-gray-600"><i class="text-xl las la-history"></i>2 hours ago</span> &nbsp . &nbsp -->
+                                <span class="text-xs text-gray-600"> <i class="text-xl lar la-heart"></i> 200
+                                    likes</span> &nbsp . &nbsp
+                                <span class="text-xs text-gray-600"> <i class="text-xl las la-comments"></i> 200
+                                    comments</span> &nbsp . &nbsp
+                                <span class="text-xs text-gray-600"> <i class="text-xl las la-eye"></i> 200 views</span>
                             </div>
-                            <div class="flex mr-2 text-gray-700 text-sm mr-8">
-                                <svg fill="none" viewBox="0 0 24 24" class="w-4 h-4 mr-1" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                                </svg>
-                                <span>8</span>
-                            </div>
-                            <div class="flex mr-2 text-gray-700 text-sm mr-4">
-                                <svg fill="none" viewBox="0 0 24 24" class="w-4 h-4 mr-1" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                                <span>share</span>
+                            <div class="bg-grey-lighter flex items-center justify-between text-gray-700 font-bold mr-4">
+                                Goto Comments &nbsp <span class="text-2xl"> »</span>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -137,7 +208,7 @@
             <div class="w-1/3 flex-col py-4 pl-4 space-y-4">
 
                 <!-- Trending Posts list -->
-                <div class="rounded-md w-full bg-primary-base divide-y divide-gray-600">
+                <div class="rounded-md w-full bg-primary-base divide-y divide-gray-600 shadow">
                     <div class="h-12 pl-4 p-4 text-white ">
                         Trending Posts
                         <!-- <span class="px-4 py-2 text-xl w-48 font-semibold text-white"></span> -->
@@ -145,32 +216,70 @@
                     <div class="h-20 px-4 pt-2 text-white ">
                         <div class="flex">
                             <div>
-                                <div class="bg-yellow-500 shadow text-center align-middle rounded h-16 w-12 border-2 divide-y ">
-                                    <p class="text-gray-800">3662</p>
-                                    <p class="text-xs text-white text-gray-700"> diggs</p>
-                                 </div>
+                                <div
+                                    class="bg-yellow-500 shadow text-center align-middle rounded mt-1 h-14 w-12 border-2 divide-y ">
+                                    <p class=" h-8 align-middle text-gray-800">3662</p>
+                                    <p class="h-6 text-xs text-white text-gray-700"> diggs</p>
+                                </div>
                             </div>
                             <div class="pl-2">
-                                <p class="text-sm">How does the complexity of living structures compare with the complexity of artificial structures?</p>
-                                <span class="text-xs text-gray-400"> 2 hours ago</span>   .
+                                <p class="text-sm font-semibold">How does the complexity of living structures compare
+                                    with the complexity of artificial structures?</p>
+                                <span class="text-xs text-gray-400"> 2 hours ago</span> .
                                 <span class="text-xs text-gray-400"> 200 likes</span> .
                                 <span class="text-xs text-gray-400"> 200 comments</span>
                             </div>
                         </div>
 
                     </div>
-                    <div class="h-20"></div>
-                    <div class="h-20"></div>
-                    <div class="h-20"></div>
+                    <div class="h-20 px-4 pt-2 text-white ">
+                        <div class="flex">
+                            <div>
+                                <div
+                                    class="bg-yellow-500 shadow text-center align-middle rounded mt-1 h-14 w-12 border-2 divide-y ">
+                                    <p class=" h-8 align-middle text-gray-800">3662</p>
+                                    <p class="h-6 text-xs text-white text-gray-700"> diggs</p>
+                                </div>
+                            </div>
+                            <div class="pl-2">
+                                <p class="text-sm">How does the complexity of living structures compare with the
+                                    complexity of artificial structures?</p>
+                                <span class="text-xs text-gray-400"> 2 hours ago</span> .
+                                <span class="text-xs text-gray-400"> 200 likes</span> .
+                                <span class="text-xs text-gray-400"> 200 comments</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="h-20 px-4 pt-2 text-white ">
+                        <div class="flex">
+                            <div>
+                                <div
+                                    class="bg-yellow-500 shadow text-center align-middle rounded mt-1 h-14 w-12 border-2 divide-y ">
+                                    <p class=" h-8 align-middle text-gray-800">3662</p>
+                                    <p class="h-6 text-xs text-white text-gray-700"> diggs</p>
+                                </div>
+                            </div>
+                            <div class="pl-2">
+                                <p class="text-sm">How does the complexity of living structures compare with the
+                                    complexity of artificial structures?</p>
+                                <span class="text-xs text-gray-400"> 2 hours ago</span> .
+                                <span class="text-xs text-gray-400"> 200 likes</span> .
+                                <span class="text-xs text-gray-400"> 200 comments</span>
+                            </div>
+                        </div>
+
+                    </div>
+
                     <div class="h-20"></div>
                     <div class="h-12"></div>
 
                 </div>
 
 
-                
 
-                
+
+
             </div>
         </div>
 
