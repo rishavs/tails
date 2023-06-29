@@ -1,16 +1,22 @@
 {
-  "name": "tails",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build": "postcss css/styles.css -o dist/tailwind.css"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "autoprefixer": "^9.8.6",
-    "postcss-cli": "^7.1.2",
-    "tailwindcss": "^1.8.10"
-  }
+	"name": "tails",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "run-p dev:*",
+		"dev:wrangler": "wrangler pages dev dist --live-reload --port 3000",
+		"dev:esbuild": "esbuild --bundle src/server.js --format=esm --watch --outfile=dist/_worker.js",
+		"build": "esbuild --bundle src/server.js --format=esm --outfile=dist/_worker.js",
+		"deploy": "wrangler pages publish dist"
+	},
+	"dependencies": {
+		"@planetscale/database": "*",
+		"jose": "^4.14.4",
+		"nanoid": "^4.0.2"
+	},
+	"devDependencies": {
+		"esbuild": "*",
+		"npm-run-all": "*",
+		"wrangler": "*"
+	}
 }

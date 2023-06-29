@@ -1,9 +1,0 @@
-@tailwind base;
-
-@tailwind components;
-
-.dbg {
-    @apply border-solid border-2 border-red-600;
-}
-
-@tailwind utilities;
