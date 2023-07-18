@@ -5,7 +5,7 @@ export const buildHomePage = async (store) => {
     store.page.descr = "This is the Home page"
 
     const data = await fetchAllPosts(store)
-    console.log(data)
+    // console.log(data)
 
     let postsList = ""
     for (var item of data) {

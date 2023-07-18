@@ -1,5 +1,6 @@
 import * as jose from 'jose'
 import { parseCookie } from '../utils.js'
+import { addGoogleUser } from '../database.js'
 
 export const signinGoogleUser = async (store) => {
 
@@ -13,9 +14,9 @@ export const signinGoogleUser = async (store) => {
     //     console.log(`${key} ==> ${value}`);
     // })
 
-    console.log(`CSRFTokenInCookie: ${CSRFTokenInCookie}`)
-    console.log(`CSRFTokenInPost: ${CSRFTokenInPost}`)
-    console.log(`IDToken: ${IDToken}`)
+    // console.log(`CSRFTokenInCookie: ${CSRFTokenInCookie}`)
+    // console.log(`CSRFTokenInPost: ${CSRFTokenInPost}`)
+    // console.log(`IDToken: ${IDToken}`)
 
     // // Display the key/value pairs
     // store.request.headers.forEach((value, key) => {
@@ -51,18 +52,6 @@ export const signinGoogleUser = async (store) => {
         audience: "326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com"
     })
 
-    const nonce = payload.nonce
-    const email = payload.email
-    const email_verified = payload.email_verified
-    const name = payload.name
-    const picture = payload.picture
-
-    console.log(`nonce: ${nonce}`)
-    console.log(`email: ${email}`)
-    console.log(`email_verified: ${email_verified}`)
-    console.log(`name: ${name}`)
-    console.log(`picture: ${picture}`)
-
     // ------------------------------------------
     // Verify the nonce
     // ------------------------------------------
@@ -74,24 +63,40 @@ export const signinGoogleUser = async (store) => {
     //     throw new Error(503, { cause: "Nonce mismatch" })
     // }
 
-    console.log(`nonce check. Is "${payload.nonce}" == "${store.page.nonce}"`)
+    // console.log(`nonce check. Is "${payload.nonce}" == "${store.page.nonce}"`)
     // TODO - how to pass nonce between the routes? the server is stateless!
     // Use KV for nonce? rgerenrate every hour?
     
     // ------------------------------------------
-    // Check if user exists in db. add id to store, if it does. create user if not.
+    // Insert user in db. 
     // ------------------------------------------
-    store.user.googleID = payload.email
+    let newUser = {
+        slug        : crypto.randomUUID(),
+        name        : "Nony Mouse",
+        thumb       : "something", 
+        honorific   : "none", 
+        flair       : "none",
+        role        : "user",
+        level       : "wood",
+        googleID   : payload.email
+    }
 
-    
-
+    let res = await addGoogleUser(store, newUser);
+    // console.log(`addGoogleUser: ${res[0]}`)
 
     // ------------------------------------------
-    // Create a session
+    // Set the user in the store
     // ------------------------------------------
+    store.user.googleID     = newUser.googleID
+    store.user.name         = newUser.name
+    store.user.thumb        = newUser.picture
+    store.user.slug         = newUser.slug
+    store.user.honorific    = newUser.honorific
+    store.user.flair        = newUser.flair
+    store.user.role         = newUser.role
+    store.user.level        = newUser.level
 
 
-    
     store.resp.status = 200
     store.resp.content = JSON.stringify(payload)
 }

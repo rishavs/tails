@@ -6,11 +6,13 @@ import { generateHTML } from './handlers/generateHTML';
 
 import { buildHomePage } from './handlers/buildHomePage';
 import { buildPostDetailsPage } from './handlers/buildPostDetailsPage';
+import { buildErrorPage } from "./handlers/buildErrorPage";
 
 let routes = {
     // API Routes
     "GET/api/hello"             : [() => console.log("YOYO"), sayHello],
-    "POST/api/signinGoogleUser" : [signinGoogleUser],
+    "GET/api/raiseError"        : [() => {throw new Error(418, { cause: "This is TEAPOT!" })}],
+    "POST/api/signinGoogleUser" : [signinGoogleUser], //createSession, 
     
     // Static Routes
     "GET/"                      : [buildHomePage, generateHTML],
@@ -22,6 +24,29 @@ let routes = {
 
 export default {
 	async fetch(request, env, ctx) {
+        let enc = new TextEncoder()
+        let payload = enc.encode(JSON.stringify({
+            name: "Pika Pika Pika Choooo",
+            slug: "abcd"
+        }))
+
+        let key = await crypto.subtle.generateKey(
+            {
+              name: "HMAC",
+              hash: { name: "SHA-512" },
+            },
+            true,
+            ["sign", "verify"]
+        );
+        let exportedKey = await crypto.subtle.exportKey("jwk", key)
+        let portableKey = await JSON.stringify(exportedKey)
+
+        console.log(portableKey)
+
+        // now generate a jwt with the payload using the key
+        let jwt = await crypto.subtle.sign("HMAC", key, payload)
+        console.log(jwt)
+
 		const url   = new URL(request.url);
 
         // ------------------------------------------
@@ -40,6 +65,13 @@ export default {
             conn        : null,
             user        : {
                 slug        : null,
+                name        : null,
+                thumb       : null, 
+                honorific   : null, 
+                flair       : null,
+                role        : null,
+                level       : null,
+
                 sessionID   : null,
                 googleID    : null,
                 appleID     : null,
@@ -77,7 +109,7 @@ export default {
         } else {
             // Generate nonce for authentication
             // store.page.nonce = crypto.randomUUID()
-            console.log("GENERATED NONCE: ", store.page.nonce)
+            // console.log("GENERATED NONCE: ", store.page.nonce)
 
             // Set headers
             store.resp.headers.append('Powered-by', 'VIEW: Pika Pika Pika Choooo')
@@ -130,9 +162,15 @@ export default {
             } else {
                 store.resp.status = 500
             }
+
+            // Build the error page
+            if (!url.pathname.startsWith("/api")) {
+                await buildErrorPage(store, e)
+                await generateHTML(store)
+            }
         }
         // content = showAboutPage(request, env, ctx);
         return new Response(store.resp.content, { status: store.resp.status, headers: store.resp.headers})
 
-	},
-};
+	}
+}

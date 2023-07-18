@@ -1,3 +1,316 @@
+// node_modules/@planetscale/database/dist/sanitization.js
+function format(query, values) {
+  return Array.isArray(values) ? replacePosition(query, values) : replaceNamed(query, values);
+}
+function replacePosition(query, values) {
+  let index = 0;
+  return query.replace(/\?/g, (match) => {
+    return index < values.length ? sanitize(values[index++]) : match;
+  });
+}
+function replaceNamed(query, values) {
+  return query.replace(/:(\w+)/g, (match, name) => {
+    return hasOwn(values, name) ? sanitize(values[name]) : match;
+  });
+}
+function hasOwn(obj, name) {
+  return Object.prototype.hasOwnProperty.call(obj, name);
+}
+function sanitize(value) {
+  if (value == null) {
+    return "null";
+  }
+  if (typeof value === "number") {
+    return String(value);
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  if (typeof value === "string") {
+    return quote(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitize).join(", ");
+  }
+  if (value instanceof Date) {
+    return quote(value.toISOString().replace("Z", ""));
+  }
+  return quote(value.toString());
+}
+function quote(text) {
+  return `'${escape(text)}'`;
+}
+var re = /[\0\b\n\r\t\x1a\\"']/g;
+function escape(text) {
+  return text.replace(re, replacement);
+}
+function replacement(text) {
+  switch (text) {
+    case '"':
+      return '\\"';
+    case "'":
+      return "\\'";
+    case "\n":
+      return "\\n";
+    case "\r":
+      return "\\r";
+    case "	":
+      return "\\t";
+    case "\\":
+      return "\\\\";
+    case "\0":
+      return "\\0";
+    case "\b":
+      return "\\b";
+    case "":
+      return "\\Z";
+    default:
+      return "";
+  }
+}
+
+// node_modules/@planetscale/database/dist/text.js
+var decoder = new TextDecoder("utf-8");
+function decode(text) {
+  return text ? decoder.decode(Uint8Array.from(bytes(text))) : "";
+}
+function bytes(text) {
+  return text.split("").map((c) => c.charCodeAt(0));
+}
+
+// node_modules/@planetscale/database/dist/version.js
+var Version = "1.7.0";
+
+// node_modules/@planetscale/database/dist/index.js
+var DatabaseError = class extends Error {
+  constructor(message2, status, body) {
+    super(message2);
+    this.status = status;
+    this.name = "DatabaseError";
+    this.body = body;
+  }
+};
+var defaultExecuteOptions = {
+  as: "object"
+};
+var Tx = class {
+  constructor(conn) {
+    this.conn = conn;
+  }
+  async execute(query, args = null, options = defaultExecuteOptions) {
+    return this.conn.execute(query, args, options);
+  }
+};
+var Connection = class _Connection {
+  constructor(config) {
+    var _a;
+    this.session = null;
+    this.config = { ...config };
+    if (typeof fetch !== "undefined") {
+      (_a = this.config).fetch || (_a.fetch = fetch);
+    }
+    if (config.url) {
+      const url = new URL(config.url);
+      this.config.username = url.username;
+      this.config.password = url.password;
+      this.config.host = url.hostname;
+    }
+  }
+  async transaction(fn) {
+    const conn = new _Connection(this.config);
+    const tx = new Tx(conn);
+    try {
+      await tx.execute("BEGIN");
+      const res = await fn(tx);
+      await tx.execute("COMMIT");
+      return res;
+    } catch (err) {
+      await tx.execute("ROLLBACK");
+      throw err;
+    }
+  }
+  async refresh() {
+    await this.createSession();
+  }
+  async execute(query, args = null, options = defaultExecuteOptions) {
+    const url = new URL("/psdb.v1alpha1.Database/Execute", `https://${this.config.host}`);
+    const formatter = this.config.format || format;
+    const sql = args ? formatter(query, args) : query;
+    const saved = await postJSON(this.config, url, { query: sql, session: this.session });
+    const { result, session, error, timing } = saved;
+    if (error) {
+      throw new DatabaseError(error.message, 400, error);
+    }
+    const rowsAffected = result?.rowsAffected ? parseInt(result.rowsAffected, 10) : 0;
+    const insertId = result?.insertId ?? "0";
+    this.session = session;
+    const fields = result?.fields ?? [];
+    for (const field of fields) {
+      field.type || (field.type = "NULL");
+    }
+    const castFn = options.cast || this.config.cast || cast;
+    const rows = result ? parse(result, castFn, options.as || "object") : [];
+    const headers = fields.map((f) => f.name);
+    const typeByName = (acc, { name, type }) => ({ ...acc, [name]: type });
+    const types2 = fields.reduce(typeByName, {});
+    const timingSeconds = timing ?? 0;
+    return {
+      headers,
+      types: types2,
+      fields,
+      rows,
+      rowsAffected,
+      insertId,
+      size: rows.length,
+      statement: sql,
+      time: timingSeconds * 1e3
+    };
+  }
+  async createSession() {
+    const url = new URL("/psdb.v1alpha1.Database/CreateSession", `https://${this.config.host}`);
+    const { session } = await postJSON(this.config, url);
+    this.session = session;
+    return session;
+  }
+};
+async function postJSON(config, url, body = {}) {
+  const auth = btoa(`${config.username}:${config.password}`);
+  const { fetch: fetch2 } = config;
+  const response = await fetch2(url.toString(), {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": `database-js/${Version}`,
+      Authorization: `Basic ${auth}`
+    },
+    cache: "no-store"
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    let error = null;
+    try {
+      const e = (await response.json()).error;
+      error = new DatabaseError(e.message, response.status, e);
+    } catch {
+      error = new DatabaseError(response.statusText, response.status, {
+        code: "internal",
+        message: response.statusText
+      });
+    }
+    throw error;
+  }
+}
+function connect(config) {
+  return new Connection(config);
+}
+function parseArrayRow(fields, rawRow, cast2) {
+  const row = decodeRow(rawRow);
+  return fields.map((field, ix) => {
+    return cast2(field, row[ix]);
+  });
+}
+function parseObjectRow(fields, rawRow, cast2) {
+  const row = decodeRow(rawRow);
+  return fields.reduce((acc, field, ix) => {
+    acc[field.name] = cast2(field, row[ix]);
+    return acc;
+  }, {});
+}
+function parse(result, cast2, returnAs) {
+  const fields = result.fields;
+  const rows = result.rows ?? [];
+  return rows.map((row) => returnAs === "array" ? parseArrayRow(fields, row, cast2) : parseObjectRow(fields, row, cast2));
+}
+function decodeRow(row) {
+  const values = row.values ? atob(row.values) : "";
+  let offset = 0;
+  return row.lengths.map((size) => {
+    const width = parseInt(size, 10);
+    if (width < 0)
+      return null;
+    const splice = values.substring(offset, offset + width);
+    offset += width;
+    return splice;
+  });
+}
+function cast(field, value) {
+  if (value === "" || value == null) {
+    return value;
+  }
+  switch (field.type) {
+    case "INT8":
+    case "INT16":
+    case "INT24":
+    case "INT32":
+    case "UINT8":
+    case "UINT16":
+    case "UINT24":
+    case "UINT32":
+    case "YEAR":
+      return parseInt(value, 10);
+    case "FLOAT32":
+    case "FLOAT64":
+      return parseFloat(value);
+    case "DECIMAL":
+    case "INT64":
+    case "UINT64":
+    case "DATE":
+    case "TIME":
+    case "DATETIME":
+    case "TIMESTAMP":
+    case "BLOB":
+    case "BIT":
+    case "VARBINARY":
+    case "BINARY":
+      return value;
+    case "JSON":
+      return JSON.parse(decode(value));
+    default:
+      return decode(value);
+  }
+}
+
+// src/database.js
+var connectToPlanetScale = (store) => {
+  const DBConfig = {
+    host: store.env.DATABASE_HOST,
+    username: store.env.DATABASE_USERNAME,
+    password: store.env.DATABASE_PASSWORD,
+    fetch: (url, init) => {
+      delete init["cache"];
+      return fetch(url, init);
+    }
+  };
+  return connect(DBConfig);
+};
+var fetchAllPosts = async (store) => {
+  let conn = connectToPlanetScale(store);
+  let result = await conn.execute("select * from posts limit 10");
+  return result.rows;
+};
+var fetchSpecificPostById = async (store) => {
+  let conn = connectToPlanetScale(store);
+  console.log("ID IS: ", store.page.id);
+  let result = await conn.execute("select * from posts where id=:id", { id: store.page.id });
+  console.log("ID IS: ", store.page.id);
+  if (result.rows.length == 0) {
+    let err = new Error();
+    err.message = "404";
+    err.cause = "this id doesn't exists in the db";
+    throw err;
+  }
+  return result.rows;
+};
+var addGoogleUser = async (store, newUser) => {
+  let conn = connectToPlanetScale(store);
+  let query = `INSERT IGNORE INTO users (slug, name, thumb, honorific, flair, role, level, google_id) 
+        VALUES (:slug, :name, :thumb, :honorific, :flair, :role, :level, :google_id)`;
+  let result = await conn.execute(query, { slug: newUser.slug, name: newUser.name, thumb: newUser.thumb, honorific: newUser.honorific, flair: newUser.flair, role: newUser.role, level: newUser.level, google_id: newUser.googleID });
+  return result;
+};
+
 // src/handlers/sayHello.js
 var sayHello = async (store) => {
   store.resp.status = 200;
@@ -10,7 +323,7 @@ var isCryptoKey = (key) => key instanceof CryptoKey;
 
 // node_modules/jose/dist/browser/lib/buffer_utils.js
 var encoder = new TextEncoder();
-var decoder = new TextDecoder();
+var decoder2 = new TextDecoder();
 var MAX_INT32 = 2 ** 32;
 function concat(...buffers) {
   const size = buffers.reduce((acc, { length }) => acc + length, 0);
@@ -32,10 +345,10 @@ var decodeBase64 = (encoded) => {
   }
   return bytes2;
 };
-var decode = (input) => {
+var decode2 = (input) => {
   let encoded = input;
   if (encoded instanceof Uint8Array) {
-    encoded = decoder.decode(encoded);
+    encoded = decoder2.decode(encoded);
   }
   encoded = encoded.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, "");
   try {
@@ -470,7 +783,7 @@ function subtleMapping(jwk) {
   }
   return { algorithm, keyUsages };
 }
-var parse = async (jwk) => {
+var parse2 = async (jwk) => {
   var _a, _b;
   if (!jwk.alg) {
     throw new TypeError('"alg" argument is required when "jwk.alg" is not present');
@@ -482,14 +795,14 @@ var parse = async (jwk) => {
     (_b = jwk.key_ops) !== null && _b !== void 0 ? _b : keyUsages
   ];
   if (algorithm.name === "PBKDF2") {
-    return webcrypto_default.subtle.importKey("raw", decode(jwk.k), ...rest);
+    return webcrypto_default.subtle.importKey("raw", decode2(jwk.k), ...rest);
   }
   const keyData = { ...jwk };
   delete keyData.alg;
   delete keyData.use;
   return webcrypto_default.subtle.importKey("jwk", keyData, ...rest);
 };
-var jwk_to_key_default = parse;
+var jwk_to_key_default = parse2;
 
 // node_modules/jose/dist/browser/key/import.js
 async function importJWK(jwk, alg, octAsKeyObject) {
@@ -507,7 +820,7 @@ async function importJWK(jwk, alg, octAsKeyObject) {
       if (octAsKeyObject) {
         return jwk_to_key_default({ ...jwk, alg, ext: (_a = jwk.ext) !== null && _a !== void 0 ? _a : false });
       }
-      return decode(jwk.k);
+      return decode2(jwk.k);
     case "RSA":
       if (jwk.oth !== void 0) {
         throw new JOSENotSupported('RSA JWK "oth" (Other Primes Info) Parameter value is not supported');
@@ -686,8 +999,8 @@ async function flattenedVerify(jws, key, options) {
   let parsedProt = {};
   if (jws.protected) {
     try {
-      const protectedHeader = decode(jws.protected);
-      parsedProt = JSON.parse(decoder.decode(protectedHeader));
+      const protectedHeader = decode2(jws.protected);
+      parsedProt = JSON.parse(decoder2.decode(protectedHeader));
     } catch (_b) {
       throw new JWSInvalid("JWS Protected Header is invalid");
     }
@@ -729,14 +1042,14 @@ async function flattenedVerify(jws, key, options) {
   }
   check_key_type_default(alg, key, "verify");
   const data = concat(encoder.encode((_a = jws.protected) !== null && _a !== void 0 ? _a : ""), encoder.encode("."), typeof jws.payload === "string" ? encoder.encode(jws.payload) : jws.payload);
-  const signature = decode(jws.signature);
+  const signature = decode2(jws.signature);
   const verified = await verify_default(alg, key, signature, data);
   if (!verified) {
     throw new JWSSignatureVerificationFailed();
   }
   let payload;
   if (b64) {
-    payload = decode(jws.payload);
+    payload = decode2(jws.payload);
   } else if (typeof jws.payload === "string") {
     payload = encoder.encode(jws.payload);
   } else {
@@ -758,7 +1071,7 @@ async function flattenedVerify(jws, key, options) {
 // node_modules/jose/dist/browser/jws/compact/verify.js
 async function compactVerify(jws, key, options) {
   if (jws instanceof Uint8Array) {
-    jws = decoder.decode(jws);
+    jws = decoder2.decode(jws);
   }
   if (typeof jws !== "string") {
     throw new JWSInvalid("Compact JWS must be a string or Uint8Array");
@@ -842,7 +1155,7 @@ var jwt_claims_set_default = (protectedHeader, encodedPayload, options = {}) => 
   }
   let payload;
   try {
-    payload = JSON.parse(decoder.decode(encodedPayload));
+    payload = JSON.parse(decoder2.decode(encodedPayload));
   } catch (_a) {
   }
   if (!isObject(payload)) {
@@ -1150,9 +1463,6 @@ var signinGoogleUser = async (store) => {
   let CSRFTokenInCookie = parseCookie(store.request.headers.get("cookie")).g_csrf_token;
   let CSRFTokenInPost = data.get("g_csrf_token");
   let IDToken = data.get("credential");
-  console.log(`CSRFTokenInCookie: ${CSRFTokenInCookie}`);
-  console.log(`CSRFTokenInPost: ${CSRFTokenInPost}`);
-  console.log(`IDToken: ${IDToken}`);
   let cookies = parseCookie(store.request.headers.get("cookie"));
   if (!CSRFTokenInCookie) {
     throw new Error(503, { cause: "No CSRF token present in the google cookie" });
@@ -1169,21 +1479,28 @@ var signinGoogleUser = async (store) => {
     issuer: "https://accounts.google.com",
     audience: "326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com"
   });
-  const nonce = payload.nonce;
-  const email = payload.email;
-  const email_verified = payload.email_verified;
-  const name = payload.name;
-  const picture = payload.picture;
-  console.log(`nonce: ${nonce}`);
-  console.log(`email: ${email}`);
-  console.log(`email_verified: ${email_verified}`);
-  console.log(`name: ${name}`);
-  console.log(`picture: ${picture}`);
   if (!payload.nonce) {
     throw new Error(503, { cause: "No nonce present in the ID token" });
   }
-  console.log(`nonce check. Is "${payload.nonce}" == "${store.page.nonce}"`);
-  store.user.googleID = payload.email;
+  let newUser = {
+    slug: crypto.randomUUID(),
+    name: "Nony Mouse",
+    thumb: "something",
+    honorific: "none",
+    flair: "none",
+    role: "user",
+    level: "wood",
+    googleID: payload.email
+  };
+  let res = await addGoogleUser(store, newUser);
+  store.user.googleID = newUser.googleID;
+  store.user.name = newUser.name;
+  store.user.thumb = newUser.picture;
+  store.user.slug = newUser.slug;
+  store.user.honorific = newUser.honorific;
+  store.user.flair = newUser.flair;
+  store.user.role = newUser.role;
+  store.user.level = newUser.level;
   store.resp.status = 200;
   store.resp.content = JSON.stringify(payload);
 };
@@ -1364,7 +1681,7 @@ var generateHTML = async (store) => {
   store.resp.status = 200;
   store.resp.content = /*html*/
   `
-    <html lang="en" data-theme="cupcake">
+    <html lang="en" data-theme="emerald">
         <head>
             <meta charset="UTF-8">
             <title>${store.page.title}</title>
@@ -1396,316 +1713,11 @@ var generateHTML = async (store) => {
     `;
 };
 
-// node_modules/@planetscale/database/dist/sanitization.js
-function format(query, values) {
-  return Array.isArray(values) ? replacePosition(query, values) : replaceNamed(query, values);
-}
-function replacePosition(query, values) {
-  let index = 0;
-  return query.replace(/\?/g, (match) => {
-    return index < values.length ? sanitize(values[index++]) : match;
-  });
-}
-function replaceNamed(query, values) {
-  return query.replace(/:(\w+)/g, (match, name) => {
-    return hasOwn(values, name) ? sanitize(values[name]) : match;
-  });
-}
-function hasOwn(obj, name) {
-  return Object.prototype.hasOwnProperty.call(obj, name);
-}
-function sanitize(value) {
-  if (value == null) {
-    return "null";
-  }
-  if (typeof value === "number") {
-    return String(value);
-  }
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-  if (typeof value === "string") {
-    return quote(value);
-  }
-  if (Array.isArray(value)) {
-    return value.map(sanitize).join(", ");
-  }
-  if (value instanceof Date) {
-    return quote(value.toISOString().replace("Z", ""));
-  }
-  return quote(value.toString());
-}
-function quote(text) {
-  return `'${escape(text)}'`;
-}
-var re = /[\0\b\n\r\t\x1a\\"']/g;
-function escape(text) {
-  return text.replace(re, replacement);
-}
-function replacement(text) {
-  switch (text) {
-    case '"':
-      return '\\"';
-    case "'":
-      return "\\'";
-    case "\n":
-      return "\\n";
-    case "\r":
-      return "\\r";
-    case "	":
-      return "\\t";
-    case "\\":
-      return "\\\\";
-    case "\0":
-      return "\\0";
-    case "\b":
-      return "\\b";
-    case "":
-      return "\\Z";
-    default:
-      return "";
-  }
-}
-
-// node_modules/@planetscale/database/dist/text.js
-var decoder2 = new TextDecoder("utf-8");
-function decode3(text) {
-  return text ? decoder2.decode(Uint8Array.from(bytes(text))) : "";
-}
-function bytes(text) {
-  return text.split("").map((c) => c.charCodeAt(0));
-}
-
-// node_modules/@planetscale/database/dist/version.js
-var Version = "1.7.0";
-
-// node_modules/@planetscale/database/dist/index.js
-var DatabaseError = class extends Error {
-  constructor(message2, status, body) {
-    super(message2);
-    this.status = status;
-    this.name = "DatabaseError";
-    this.body = body;
-  }
-};
-var defaultExecuteOptions = {
-  as: "object"
-};
-var Tx = class {
-  constructor(conn) {
-    this.conn = conn;
-  }
-  async execute(query, args = null, options = defaultExecuteOptions) {
-    return this.conn.execute(query, args, options);
-  }
-};
-var Connection = class _Connection {
-  constructor(config) {
-    var _a;
-    this.session = null;
-    this.config = { ...config };
-    if (typeof fetch !== "undefined") {
-      (_a = this.config).fetch || (_a.fetch = fetch);
-    }
-    if (config.url) {
-      const url = new URL(config.url);
-      this.config.username = url.username;
-      this.config.password = url.password;
-      this.config.host = url.hostname;
-    }
-  }
-  async transaction(fn) {
-    const conn = new _Connection(this.config);
-    const tx = new Tx(conn);
-    try {
-      await tx.execute("BEGIN");
-      const res = await fn(tx);
-      await tx.execute("COMMIT");
-      return res;
-    } catch (err) {
-      await tx.execute("ROLLBACK");
-      throw err;
-    }
-  }
-  async refresh() {
-    await this.createSession();
-  }
-  async execute(query, args = null, options = defaultExecuteOptions) {
-    const url = new URL("/psdb.v1alpha1.Database/Execute", `https://${this.config.host}`);
-    const formatter = this.config.format || format;
-    const sql = args ? formatter(query, args) : query;
-    const saved = await postJSON(this.config, url, { query: sql, session: this.session });
-    const { result, session, error, timing } = saved;
-    if (error) {
-      throw new DatabaseError(error.message, 400, error);
-    }
-    const rowsAffected = result?.rowsAffected ? parseInt(result.rowsAffected, 10) : 0;
-    const insertId = result?.insertId ?? "0";
-    this.session = session;
-    const fields = result?.fields ?? [];
-    for (const field of fields) {
-      field.type || (field.type = "NULL");
-    }
-    const castFn = options.cast || this.config.cast || cast;
-    const rows = result ? parse2(result, castFn, options.as || "object") : [];
-    const headers = fields.map((f) => f.name);
-    const typeByName = (acc, { name, type }) => ({ ...acc, [name]: type });
-    const types2 = fields.reduce(typeByName, {});
-    const timingSeconds = timing ?? 0;
-    return {
-      headers,
-      types: types2,
-      fields,
-      rows,
-      rowsAffected,
-      insertId,
-      size: rows.length,
-      statement: sql,
-      time: timingSeconds * 1e3
-    };
-  }
-  async createSession() {
-    const url = new URL("/psdb.v1alpha1.Database/CreateSession", `https://${this.config.host}`);
-    const { session } = await postJSON(this.config, url);
-    this.session = session;
-    return session;
-  }
-};
-async function postJSON(config, url, body = {}) {
-  const auth = btoa(`${config.username}:${config.password}`);
-  const { fetch: fetch2 } = config;
-  const response = await fetch2(url.toString(), {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": `database-js/${Version}`,
-      Authorization: `Basic ${auth}`
-    },
-    cache: "no-store"
-  });
-  if (response.ok) {
-    return await response.json();
-  } else {
-    let error = null;
-    try {
-      const e = (await response.json()).error;
-      error = new DatabaseError(e.message, response.status, e);
-    } catch {
-      error = new DatabaseError(response.statusText, response.status, {
-        code: "internal",
-        message: response.statusText
-      });
-    }
-    throw error;
-  }
-}
-function connect(config) {
-  return new Connection(config);
-}
-function parseArrayRow(fields, rawRow, cast2) {
-  const row = decodeRow(rawRow);
-  return fields.map((field, ix) => {
-    return cast2(field, row[ix]);
-  });
-}
-function parseObjectRow(fields, rawRow, cast2) {
-  const row = decodeRow(rawRow);
-  return fields.reduce((acc, field, ix) => {
-    acc[field.name] = cast2(field, row[ix]);
-    return acc;
-  }, {});
-}
-function parse2(result, cast2, returnAs) {
-  const fields = result.fields;
-  const rows = result.rows ?? [];
-  return rows.map((row) => returnAs === "array" ? parseArrayRow(fields, row, cast2) : parseObjectRow(fields, row, cast2));
-}
-function decodeRow(row) {
-  const values = row.values ? atob(row.values) : "";
-  let offset = 0;
-  return row.lengths.map((size) => {
-    const width = parseInt(size, 10);
-    if (width < 0)
-      return null;
-    const splice = values.substring(offset, offset + width);
-    offset += width;
-    return splice;
-  });
-}
-function cast(field, value) {
-  if (value === "" || value == null) {
-    return value;
-  }
-  switch (field.type) {
-    case "INT8":
-    case "INT16":
-    case "INT24":
-    case "INT32":
-    case "UINT8":
-    case "UINT16":
-    case "UINT24":
-    case "UINT32":
-    case "YEAR":
-      return parseInt(value, 10);
-    case "FLOAT32":
-    case "FLOAT64":
-      return parseFloat(value);
-    case "DECIMAL":
-    case "INT64":
-    case "UINT64":
-    case "DATE":
-    case "TIME":
-    case "DATETIME":
-    case "TIMESTAMP":
-    case "BLOB":
-    case "BIT":
-    case "VARBINARY":
-    case "BINARY":
-      return value;
-    case "JSON":
-      return JSON.parse(decode3(value));
-    default:
-      return decode3(value);
-  }
-}
-
-// src/database.js
-var connectToPlanetScale = (store) => {
-  const DBConfig = {
-    host: store.env.DATABASE_HOST,
-    username: store.env.DATABASE_USERNAME,
-    password: store.env.DATABASE_PASSWORD,
-    fetch: (url, init) => {
-      delete init["cache"];
-      return fetch(url, init);
-    }
-  };
-  return connect(DBConfig);
-};
-var fetchAllPosts = async (store) => {
-  let conn = connectToPlanetScale(store);
-  let result = await conn.execute("select * from posts limit 10");
-  return result.rows;
-};
-var fetchSpecificPostById = async (store) => {
-  let conn = connectToPlanetScale(store);
-  let result = await conn.execute("select * from posts where id=?", [store.page.id]);
-  if (result.rows.length == 0) {
-    let err = new Error();
-    err.message = "404";
-    err.cause = "this id doesn't exists in the db";
-    throw err;
-  }
-  return result.rows;
-};
-
 // src/handlers/buildHomePage.js
 var buildHomePage = async (store) => {
   store.page.title = "Home Page";
   store.page.descr = "This is the Home page";
   const data = await fetchAllPosts(store);
-  console.log(data);
   let postsList = "";
   for (var item of data) {
     postsList += `<li><a class="link" href="/p/${item.id}">${item.title}</a></li>
@@ -1726,15 +1738,11 @@ var buildPostDetailsPage = async (store) => {
   store.page.descr = `This is the Post - ${store.page.id}`;
   const data = await fetchSpecificPostById(store);
   console.log(data);
-  let postsList = "";
-  for (var item of data) {
-    postsList += `<li><a class="link" href="/p/${item.id}">${item.title}</a></li>
-`;
-  }
   store.page.content = /*html*/
   `
         <article class="min-h-screen">
             <h1>Page Id: ${store.page.id}</h1>
+            <h2>${data[0].id}</h2>
             <h2>${data[0].title}</h2>
             <p>${data[0].description}</p>
         </article>
@@ -1742,11 +1750,29 @@ var buildPostDetailsPage = async (store) => {
     `;
 };
 
+// src/handlers/buildErrorPage.js
+var buildErrorPage = async (store, e) => {
+  store.page.title = "ERROR Page";
+  store.page.descr = "This is the error page";
+  store.page.content = /*html*/
+  `
+        <article class="min-h-screen">
+            <h1>${e.message} ERROR!</h1>
+            <h2>${e.cause}</h2>
+            <p>${e.stack}</p>
+        </article>
+        `;
+};
+
 // src/server.js
 var routes = {
   // API Routes
   "GET/api/hello": [() => console.log("YOYO"), sayHello],
+  "GET/api/raiseError": [() => {
+    throw new Error(418, { cause: "This is TEAPOT!" });
+  }],
   "POST/api/signinGoogleUser": [signinGoogleUser],
+  //createSession, 
   // Static Routes
   "GET/": [buildHomePage, generateHTML],
   "GET/about": [buildAboutPage, generateHTML],
@@ -1755,6 +1781,24 @@ var routes = {
 };
 var server_default = {
   async fetch(request, env, ctx) {
+    let enc = new TextEncoder();
+    let payload = enc.encode(JSON.stringify({
+      name: "Pika Pika Pika Choooo",
+      slug: "abcd"
+    }));
+    let key = await crypto.subtle.generateKey(
+      {
+        name: "HMAC",
+        hash: { name: "SHA-512" }
+      },
+      true,
+      ["sign", "verify"]
+    );
+    let exportedKey = await crypto.subtle.exportKey("jwk", key);
+    let portableKey = await JSON.stringify(exportedKey);
+    console.log(portableKey);
+    let jwt = await crypto.subtle.sign("HMAC", key, payload);
+    console.log(jwt);
     const url = new URL(request.url);
     if (url.pathname.startsWith("/pub")) {
       return env.ASSETS.fetch(request);
@@ -1764,6 +1808,12 @@ var server_default = {
       conn: null,
       user: {
         slug: null,
+        name: null,
+        thumb: null,
+        honorific: null,
+        flair: null,
+        role: null,
+        level: null,
         sessionID: null,
         googleID: null,
         appleID: null
@@ -1791,7 +1841,6 @@ var server_default = {
       store.resp.headers.append("Powered-by", "API: Pika Pika Pika Choooo");
       handlers = routes[`${request.method}${url.pathname}`];
     } else {
-      console.log("GENERATED NONCE: ", store.page.nonce);
       store.resp.headers.append("Powered-by", "VIEW: Pika Pika Pika Choooo");
       store.resp.headers.append("Content-Type", "text/html; charset=UTF-8");
       let urlFrag = url.pathname.split("/").filter((a) => a);
@@ -1826,6 +1875,10 @@ var server_default = {
         store.resp.status = e.message;
       } else {
         store.resp.status = 500;
+      }
+      if (!url.pathname.startsWith("/api")) {
+        await buildErrorPage(store, e);
+        await generateHTML(store);
       }
     }
     return new Response(store.resp.content, { status: store.resp.status, headers: store.resp.headers });

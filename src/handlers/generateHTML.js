@@ -7,7 +7,7 @@ import { Footer } from "../views/footer.js";
 export const generateHTML = async (store) => {
     store.resp.status = 200
     store.resp.content =     /*html*/`
-    <html lang="en" data-theme="cupcake">
+    <html lang="en" data-theme="emerald">
         <head>
             <meta charset="UTF-8">
             <title>${store.page.title}</title>
