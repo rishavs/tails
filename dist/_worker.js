@@ -79,7 +79,7 @@ function bytes(text) {
 }
 
 // node_modules/@planetscale/database/dist/version.js
-var Version = "1.7.0";
+var Version = "1.8.0";
 
 // node_modules/@planetscale/database/dist/index.js
 var DatabaseError = class extends Error {
@@ -264,6 +264,7 @@ function cast(field, value) {
     case "BIT":
     case "VARBINARY":
     case "BINARY":
+    case "GEOMETRY":
       return value;
     case "JSON":
       return JSON.parse(decode(value));
