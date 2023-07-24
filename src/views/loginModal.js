@@ -26,6 +26,7 @@ export const loginModal = async (store) => {
                     data-size="large"
                     data-logo_alignment="left">
                 </div>
+                
             </div>
 
         </div>

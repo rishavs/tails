@@ -1,6 +1,7 @@
 import { Header } from "../views/header.js";
 import { FiltersBar } from "../views/filtersBar.js";
 import { loginModal } from "../views/loginModal.js";
+import { userDetailsModal } from "../views/userDetailsModal.js";
 import { Footer } from "../views/footer.js";
 
 
@@ -33,6 +34,7 @@ export const generateHTML = async (store) => {
                 ${store.page.content}
             </div>
             ${await loginModal(store)}
+            ${await userDetailsModal(store)}
             ${await Footer()}
         </body>
     </html>

@@ -1464,6 +1464,9 @@ var signinGoogleUser = async (store) => {
   let CSRFTokenInCookie = parseCookie(store.request.headers.get("cookie")).g_csrf_token;
   let CSRFTokenInPost = data.get("g_csrf_token");
   let IDToken = data.get("credential");
+  data.forEach((value, key) => {
+    console.log(`${key} ==> ${value}`);
+  });
   let cookies = parseCookie(store.request.headers.get("cookie"));
   if (!CSRFTokenInCookie) {
     throw new Error(503, { cause: "No CSRF token present in the google cookie" });
@@ -1478,7 +1481,7 @@ var signinGoogleUser = async (store) => {
   const JWKS = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
   const { payload, protectedHeader } = await jwtVerify(IDToken, JWKS, {
     issuer: "https://accounts.google.com",
-    audience: "326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com"
+    audience: store.env.GOOGLE_KEY
   });
   if (!payload.nonce) {
     throw new Error(503, { cause: "No nonce present in the ID token" });
@@ -1494,16 +1497,15 @@ var signinGoogleUser = async (store) => {
     googleID: payload.email
   };
   let res = await addGoogleUser(store, newUser);
-  store.user.googleID = newUser.googleID;
-  store.user.name = newUser.name;
-  store.user.thumb = newUser.picture;
-  store.user.slug = newUser.slug;
-  store.user.honorific = newUser.honorific;
-  store.user.flair = newUser.flair;
-  store.user.role = newUser.role;
-  store.user.level = newUser.level;
-  store.resp.status = 200;
-  store.resp.content = JSON.stringify(payload);
+  console.log(`addGoogleUser: ${res[0]}`);
+  const sessionID = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/gi, "").substring(0, Math.random() * (63 - 57) + 57);
+  await store.env.SESSIONS.put(sessionID, newUser.slug);
+  const bagID = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/gi, "").substring(0, Math.random() * (63 - 57) + 57);
+  await store.env.BAG.put(bagID, sessionID);
+  const redirectTo = new URL(store.request.url).searchParams.get("redirectTo");
+  store.resp.status = 302;
+  store.resp.headers.append("Set-Cookie", `DIGGLUSID=${sessionID}; path=/; HttpOnly; Secure; SameSite=Strict;`);
+  store.resp.headers.append("Location", `${store.env.HOST}${redirectTo}?triggerFragment=userDetailsModal&referEMail=${newUser.googleID}&setUserName=${newUser.name}&setUserThumb=${newUser.thumb}&setUserHonorific=${newUser.honorific}&setUserFlair=${newUser.flair}&setUserRole=${newUser.role}&setUserLevel=${newUser.level}`);
 };
 
 // src/handlers/buildAboutPage.js
@@ -1624,10 +1626,44 @@ var loginModal = async (store) => {
                     data-size="large"
                     data-logo_alignment="left">
                 </div>
+                
             </div>
 
         </div>
     `
+  );
+};
+
+// src/views/userDetailsModal.js
+var userDetailsModal = async (store) => {
+  return (
+    /*html*/
+    `
+        <!-- Open the modal using ID.showModal() method -->
+        <dialog id="userDetailsModal" class="modal">
+            <form method="dialog" class="modal-box">
+                <h3 class="font-bold text-lg">Hello!</h3>
+                <p class="py-4">Press ESC key or click the button below to close</p>
+                <div class="modal-action">
+                    <!-- if there is a button in form, it will close the modal -->
+                    <button class="btn">Close</button>
+                </div>
+            </form>
+        </dialog>
+        <script>
+            if (window.location.search) {
+                const params = new URL(document.location).searchParams;
+                const trigger = params.get("triggerFragment");
+                if (trigger == "userDetailsModal") {
+                    const modal = document.getElementById('userDetailsModal');
+                    modal.showModal();
+                    console.log(document.cookie)
+                }
+            }
+
+        <\/script>
+
+`
   );
 };
 
@@ -1708,6 +1744,7 @@ var generateHTML = async (store) => {
                 ${store.page.content}
             </div>
             ${await loginModal(store)}
+            ${await userDetailsModal(store)}
             ${await Footer()}
         </body>
     </html>
@@ -1751,6 +1788,22 @@ var buildPostDetailsPage = async (store) => {
     `;
 };
 
+// src/handlers/generateAuthPage.js
+var generateAuthPage = async (store) => {
+  store.resp.status = 302;
+  store.resp.content = "AUTHENTICATING...";
+  const bagID = new URL(store.request.url).searchParams.get("loginID");
+  const sessionID = await store.env.BAG.get(bagID);
+  console.log("BAg ID: ", bagID);
+  console.log(`Session ID from BAG: ${sessionID}`);
+  const dest = new URL(store.request.url).searchParams.get("redirectTo");
+  console.log(`Redirecting to: ${dest}`);
+  const cookie = `sessionID=${sessionID}; path=/; HttpOnly; Secure; SameSite=Strict;`;
+  store.resp.headers.set("Set-Cookie", cookie);
+  store.resp.headers.set("Location", dest);
+  await new Promise((r) => setTimeout(r, 2e3));
+};
+
 // src/handlers/buildErrorPage.js
 var buildErrorPage = async (store, e) => {
   store.page.title = "ERROR Page";
@@ -1777,29 +1830,12 @@ var routes = {
   // Static Routes
   "GET/": [buildHomePage, generateHTML],
   "GET/about": [buildAboutPage, generateHTML],
+  "GET/authenticate": [generateAuthPage],
   // Dynamic Routes
   "GET/p/:id": [buildPostDetailsPage, generateHTML]
 };
 var server_default = {
   async fetch(request, env, ctx) {
-    let enc = new TextEncoder();
-    let payload = enc.encode(JSON.stringify({
-      name: "Pika Pika Pika Choooo",
-      slug: "abcd"
-    }));
-    let key = await crypto.subtle.generateKey(
-      {
-        name: "HMAC",
-        hash: { name: "SHA-512" }
-      },
-      true,
-      ["sign", "verify"]
-    );
-    let exportedKey = await crypto.subtle.exportKey("jwk", key);
-    let portableKey = await JSON.stringify(exportedKey);
-    console.log(portableKey);
-    let jwt = await crypto.subtle.sign("HMAC", key, payload);
-    console.log(jwt);
     const url = new URL(request.url);
     if (url.pathname.startsWith("/pub")) {
       return env.ASSETS.fetch(request);
@@ -1823,7 +1859,8 @@ var server_default = {
       env,
       page: {
         path: url.pathname,
-        redirectTo: url.searchParams.get("redirectTo"),
+        // redirectTo  : url.searchParams.get("redirectTo"),
+        redirectTo: null,
         nonce: null,
         kind: null,
         id: null,

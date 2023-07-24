@@ -6,6 +6,7 @@ import { generateHTML } from './handlers/generateHTML';
 
 import { buildHomePage } from './handlers/buildHomePage';
 import { buildPostDetailsPage } from './handlers/buildPostDetailsPage';
+import { generateAuthPage } from './handlers/generateAuthPage';
 import { buildErrorPage } from "./handlers/buildErrorPage";
 
 let routes = {
@@ -17,6 +18,7 @@ let routes = {
     // Static Routes
     "GET/"                      : [buildHomePage, generateHTML],
     "GET/about"                 : [buildAboutPage, generateHTML],
+    "GET/authenticate"          : [generateAuthPage],
 
     // Dynamic Routes
     "GET/p/:id"                 : [buildPostDetailsPage, generateHTML],
@@ -24,28 +26,39 @@ let routes = {
 
 export default {
 	async fetch(request, env, ctx) {
-        let enc = new TextEncoder()
-        let payload = enc.encode(JSON.stringify({
-            name: "Pika Pika Pika Choooo",
-            slug: "abcd"
-        }))
+        // let enc = new TextEncoder()
+        // let payload = enc.encode(JSON.stringify({
+        //     name: "Pika Pika Pika Choooo",
+        //     slug: "abcd"
+        // }))
 
-        let key = await crypto.subtle.generateKey(
-            {
-              name: "HMAC",
-              hash: { name: "SHA-512" },
-            },
-            true,
-            ["sign", "verify"]
-        );
-        let exportedKey = await crypto.subtle.exportKey("jwk", key)
-        let portableKey = await JSON.stringify(exportedKey)
+        // let key = await crypto.subtle.generateKey(
+        //     {
+        //       name: "HMAC",
+        //       hash: { name: "SHA-512" },
+        //     },
+        //     true,
+        //     ["sign", "verify"]
+        // );
+        // let exportedKey = await crypto.subtle.exportKey("jwk", key)
+        // let portableKey = await JSON.stringify(exportedKey)
 
-        console.log(portableKey)
+        // console.log(portableKey)
 
-        // now generate a jwt with the payload using the key
-        let jwt = await crypto.subtle.sign("HMAC", key, payload)
-        console.log(jwt)
+        // // now generate a jwt with the payload using the key
+        // let jwt = await crypto.subtle.sign("HMAC", key, payload)
+        // console.log(jwt)
+
+        // const sess = await env.SESSIONS.list()
+        // console.log("SESSIONS: ", sess)
+        // sess.keys.forEach(function(entry) {
+        //     console.log(entry);
+        // });
+        // const bg = await env.BAG.list()
+        // console.log("BAG: ", bg)
+        // bg.keys.forEach(function(entry) {
+        //     console.log(entry);
+        // });
 
 		const url   = new URL(request.url);
 
@@ -80,7 +93,8 @@ export default {
             env         : env,
             page            : {
                 path        : url.pathname,
-                redirectTo  : url.searchParams.get("redirectTo"),
+                // redirectTo  : url.searchParams.get("redirectTo"),
+                redirectTo  : null,
                 nonce       : null,
                 kind        : null,
                 id          : null,
