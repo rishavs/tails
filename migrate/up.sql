@@ -11,15 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
     creds INT DEFAULT 1,
     gil INT DEFAULT 0,
 
-    email NOT NULL UNIQUE,
+    google_id VARCHAR(64) NOT NULL UNIQUE,
+    apple_id VARCHAR(64) NOT NULL UNIQUE,
 
     warned_till TIMESTAMP,
     exiled_till TIMESTAMP,
     banned_till TIMESTAMP,
-
-    warn_count INT DEFAULT 0,
-    exiled_count INT DEFAULT 0,
-    banned_count INT DEFAULT 0,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

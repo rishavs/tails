@@ -1,4 +1,4 @@
-export const Header = async () => /*html*/ `
+export const Header = async (store) => /*html*/ `
     <nav class="navbar bg-primary px-16">
         <div class="navbar-start">
             <button class="btn btn-square btn-ghost">
@@ -14,10 +14,10 @@ export const Header = async () => /*html*/ `
                 <input type="text" placeholder="Search" class="input input-bordered" />
             </div>
         </div>
+        
         <div class="navbar-end">
-            <a class="btn modal-button bg-primary mx-1" href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com&scope=openid%20email&redirect_uri=http://localhost:3000/oauth/google/callback&state=security_token%3D138r5719ru3e1%26url%3Dhttps%3A%2F%2Foauth2-login-demo.example.com%2FmyHome&nonce=0394852-3190485-2490358">Google Sign in</a>
-            <label for="loginModal" class="btn modal-button bg-secondary mx-1">Login</label>
-            <div class="dropdown dropdown-end mx-1">
+            <label for="loginModal" class="btn modal-button bg-secondary mx-1 ${store.page.cookies.D_SID ? "hidden": "" }">Login</label>
+            <div class="dropdown dropdown-end mx-1 ${store.page.cookies.D_SID ? "": "hidden" }">
                 <label tabindex="0" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full">
                         <img src="/pub/bm.png" />
@@ -31,7 +31,7 @@ export const Header = async () => /*html*/ `
                         </a>
                     </li>
                     <li><a>Settings</a></li>
-                    <li><a>Logout</a></li>
+                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </div>
         </div>

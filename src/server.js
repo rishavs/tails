@@ -1,24 +1,33 @@
 import { sayHello } from "./handlers/sayHello";
-import { signinGoogleUser } from "./handlers/signinGoogleUser";
+import { getGoogleUser } from "./handlers/getGoogleUser";
 
 import { buildAboutPage } from "./handlers/buildAboutPage";
 import { generateHTML } from './handlers/generateHTML';
 
 import { buildHomePage } from './handlers/buildHomePage';
 import { buildPostDetailsPage } from './handlers/buildPostDetailsPage';
-import { generateAuthPage } from './handlers/generateAuthPage';
+import { login } from './handlers/login';
+import { logout } from './handlers/logout';
 import { buildErrorPage } from "./handlers/buildErrorPage";
+
+import { parseCookie } from "./utils";
+import { getUserDetails } from "./database";
+import { showAuthPage } from "./handlers/showAuthPage";
+
+
+// TODO - have every handler throw a catchall error for that handler. and have a success criteria for an early return before the throw
 
 let routes = {
     // API Routes
     "GET/api/hello"             : [() => console.log("YOYO"), sayHello],
     "GET/api/raiseError"        : [() => {throw new Error(418, { cause: "This is TEAPOT!" })}],
-    "POST/api/signinGoogleUser" : [signinGoogleUser], //createSession, 
+    "POST/api/signinGoogleUser" : [getGoogleUser, login], //createSession, 
     
     // Static Routes
     "GET/"                      : [buildHomePage, generateHTML],
     "GET/about"                 : [buildAboutPage, generateHTML],
-    "GET/authenticate"          : [generateAuthPage],
+    "GET/authenticate"          : [showAuthPage],
+    "GET/logout"                : [logout],
 
     // Dynamic Routes
     "GET/p/:id"                 : [buildPostDetailsPage, generateHTML],
@@ -26,6 +35,11 @@ let routes = {
 
 export default {
 	async fetch(request, env, ctx) {
+
+        // Capture all cookies into an object
+        // let cookies = parseCookie(request.headers.get('cookie'))
+
+
         // let enc = new TextEncoder()
         // let payload = enc.encode(JSON.stringify({
         //     name: "Pika Pika Pika Choooo",
@@ -86,12 +100,13 @@ export default {
                 level       : null,
 
                 sessionID   : null,
-                googleID    : null,
-                appleID     : null,
+                email       : null,
             },
             request     : request,
             env         : env,
             page            : {
+                fre         : false,
+                cookies     : parseCookie(request.headers.get('cookie')),
                 path        : url.pathname,
                 // redirectTo  : url.searchParams.get("redirectTo"),
                 redirectTo  : null,
@@ -108,6 +123,7 @@ export default {
                 headers     : new Headers()
             }
         }
+        console.log(store.page.cookies)
         // ------------------------------------------
         // handle APIs
         // ------------------------------------------
@@ -159,15 +175,15 @@ export default {
                 await handler(store)
             }
 
-            // redirect to path if the flag is set
-            if (store.page.redirectTo) {
-                // For now we only handle redirects to the our domain
-                let destination = `${url.protocol}//${url.host}${store.page.redirectTo}`
-                console.log("REDIRECTING TO: ", destination)
-                // Reset the redirect flsg to protect from loops
-                store.page.redirectTo = null
-                return Response.redirect(destination, 302);
-            }
+            // // redirect to path if the flag is set
+            // if (store.page.redirectTo) {
+            //     // For now we only handle redirects to the our domain
+            //     let destination = `${store.env.HOST}${store.page.redirectTo}`
+            //     console.log("REDIRECTING TO: ", destination)
+            //     // Reset the redirect flsg to protect from loops
+            //     store.page.redirectTo = null
+            //     return Response.redirect(destination, 302);
+            // }
         } catch (e) {
             console.log(e)
             store.resp.content = "ERROR: \n" + e;

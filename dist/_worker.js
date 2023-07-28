@@ -79,7 +79,7 @@ function bytes(text) {
 }
 
 // node_modules/@planetscale/database/dist/version.js
-var Version = "1.8.0";
+var Version = "1.10.0";
 
 // node_modules/@planetscale/database/dist/index.js
 var DatabaseError = class extends Error {
@@ -138,12 +138,14 @@ var Connection = class _Connection {
     const sql = args ? formatter(query, args) : query;
     const saved = await postJSON(this.config, url, { query: sql, session: this.session });
     const { result, session, error, timing } = saved;
+    if (session) {
+      this.session = session;
+    }
     if (error) {
       throw new DatabaseError(error.message, 400, error);
     }
     const rowsAffected = result?.rowsAffected ? parseInt(result.rowsAffected, 10) : 0;
     const insertId = result?.insertId ?? "0";
-    this.session = session;
     const fields = result?.fields ?? [];
     for (const field of fields) {
       field.type || (field.type = "NULL");
@@ -293,9 +295,7 @@ var fetchAllPosts = async (store) => {
 };
 var fetchSpecificPostById = async (store) => {
   let conn = connectToPlanetScale(store);
-  console.log("ID IS: ", store.page.id);
   let result = await conn.execute("select * from posts where id=:id", { id: store.page.id });
-  console.log("ID IS: ", store.page.id);
   if (result.rows.length == 0) {
     let err = new Error();
     err.message = "404";
@@ -304,11 +304,17 @@ var fetchSpecificPostById = async (store) => {
   }
   return result.rows;
 };
-var addGoogleUser = async (store, newUser) => {
+var getUserDetails = async (store) => {
+  let conn = connectToPlanetScale(store);
+  let query = "select * from users where google_id=:email or apple_id=:email limit 1";
+  let result = await conn.execute(query, { email: store.user.email });
+  return result.rows;
+};
+var addGoogleUser = async (store) => {
   let conn = connectToPlanetScale(store);
   let query = `INSERT IGNORE INTO users (slug, name, thumb, honorific, flair, role, level, google_id) 
         VALUES (:slug, :name, :thumb, :honorific, :flair, :role, :level, :google_id)`;
-  let result = await conn.execute(query, { slug: newUser.slug, name: newUser.name, thumb: newUser.thumb, honorific: newUser.honorific, flair: newUser.flair, role: newUser.role, level: newUser.level, google_id: newUser.googleID });
+  let result = await conn.execute(query, { slug: store.user.slug, name: store.user.name, thumb: store.user.thumb, honorific: store.user.honorific, flair: store.user.flair, role: store.user.role, level: store.user.level, google_id: store.user.google_id });
   return result;
 };
 
@@ -1458,8 +1464,8 @@ var parseCookie = (str) => {
   }, {});
 };
 
-// src/handlers/signinGoogleUser.js
-var signinGoogleUser = async (store) => {
+// src/handlers/getGoogleUser.js
+var getGoogleUser = async (store) => {
   let data = await store.request.formData();
   let CSRFTokenInCookie = parseCookie(store.request.headers.get("cookie")).g_csrf_token;
   let CSRFTokenInPost = data.get("g_csrf_token");
@@ -1486,26 +1492,35 @@ var signinGoogleUser = async (store) => {
   if (!payload.nonce) {
     throw new Error(503, { cause: "No nonce present in the ID token" });
   }
-  let newUser = {
-    slug: crypto.randomUUID(),
-    name: "Nony Mouse",
-    thumb: "something",
-    honorific: "none",
-    flair: "none",
-    role: "user",
-    level: "wood",
-    googleID: payload.email
-  };
-  let res = await addGoogleUser(store, newUser);
-  console.log(`addGoogleUser: ${res[0]}`);
-  const sessionID = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/gi, "").substring(0, Math.random() * (63 - 57) + 57);
-  await store.env.SESSIONS.put(sessionID, newUser.slug);
-  const bagID = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/gi, "").substring(0, Math.random() * (63 - 57) + 57);
-  await store.env.BAG.put(bagID, sessionID);
-  const redirectTo = new URL(store.request.url).searchParams.get("redirectTo");
-  store.resp.status = 302;
-  store.resp.headers.append("Set-Cookie", `DIGGLUSID=${sessionID}; path=/; HttpOnly; Secure; SameSite=Strict;`);
-  store.resp.headers.append("Location", `${store.env.HOST}${redirectTo}?triggerFragment=userDetailsModal&referEMail=${newUser.googleID}&setUserName=${newUser.name}&setUserThumb=${newUser.thumb}&setUserHonorific=${newUser.honorific}&setUserFlair=${newUser.flair}&setUserRole=${newUser.role}&setUserLevel=${newUser.level}`);
+  store.user.email = payload.email;
+  let user = await getUserDetails(store);
+  console.log(`getUserDetails:`, JSON.stringify(user));
+  console.log();
+  if (user.length != 0) {
+    console.log(`user exists`, JSON.stringify(user));
+    store.user.slug = user[0].slug;
+    store.user.name = user[0].name;
+    store.user.thumb = user[0].thumb;
+    store.user.honorific = user[0].honorific;
+    store.user.flair = user[0].flair;
+    store.user.role = user[0].role;
+    store.user.level = user[0].level;
+  } else {
+    console.log(`user doesn't exist`);
+    store.user.slug = crypto.randomUUID();
+    store.user.name = "Nony Mouse";
+    store.user.thumb = "something";
+    store.user.honorific = "none";
+    store.user.flair = "none";
+    store.user.role = "user";
+    store.user.level = "wood";
+    store.user.google_id = payload.email;
+    let res = await addGoogleUser(store);
+    console.log(`Added New Google User: ${res}`);
+    store.page.fre = true;
+  }
+  console.log(`store.user
+`, JSON.stringify(store.user));
 };
 
 // src/handlers/buildAboutPage.js
@@ -1521,7 +1536,7 @@ var buildAboutPage = async (store) => {
 };
 
 // src/views/header.js
-var Header = async () => (
+var Header = async (store) => (
   /*html*/
   `
     <nav class="navbar bg-primary px-16">
@@ -1539,10 +1554,10 @@ var Header = async () => (
                 <input type="text" placeholder="Search" class="input input-bordered" />
             </div>
         </div>
+        
         <div class="navbar-end">
-            <a class="btn modal-button bg-primary mx-1" href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com&scope=openid%20email&redirect_uri=http://localhost:3000/oauth/google/callback&state=security_token%3D138r5719ru3e1%26url%3Dhttps%3A%2F%2Foauth2-login-demo.example.com%2FmyHome&nonce=0394852-3190485-2490358">Google Sign in</a>
-            <label for="loginModal" class="btn modal-button bg-secondary mx-1">Login</label>
-            <div class="dropdown dropdown-end mx-1">
+            <label for="loginModal" class="btn modal-button bg-secondary mx-1 ${store.page.cookies.D_SID ? "hidden" : ""}">Login</label>
+            <div class="dropdown dropdown-end mx-1 ${store.page.cookies.D_SID ? "" : "hidden"}">
                 <label tabindex="0" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full">
                         <img src="/pub/bm.png" />
@@ -1556,7 +1571,7 @@ var Header = async () => (
                         </a>
                     </li>
                     <li><a>Settings</a></li>
-                    <li><a>Logout</a></li>
+                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -1614,6 +1629,7 @@ var loginModal = async (store) => {
                     data-ux_mode="redirect"
                     data-login_uri="/api/signinGoogleUser?redirectTo=${encodeURIComponent(store.page.path)}"
                     data-nonce="${store.page.nonce}"
+                    data-skip_prompt_cookie="D_SID"
                     data-auto_select="true"
                     data-itp_support="true">
                 </div>
@@ -1651,15 +1667,7 @@ var userDetailsModal = async (store) => {
             </form>
         </dialog>
         <script>
-            if (window.location.search) {
-                const params = new URL(document.location).searchParams;
-                const trigger = params.get("triggerFragment");
-                if (trigger == "userDetailsModal") {
-                    const modal = document.getElementById('userDetailsModal');
-                    modal.showModal();
-                    console.log(document.cookie)
-                }
-            }
+
 
         <\/script>
 
@@ -1738,7 +1746,7 @@ var generateHTML = async (store) => {
             <script src="https://apis.google.com/js/platform.js" async defer><\/script>
         </head>
         <body class="">
-            ${await Header()}
+            ${await Header(store)}
             ${await FiltersBar()}
             <div class="px-16 mt-16">
                 ${store.page.content}
@@ -1747,6 +1755,29 @@ var generateHTML = async (store) => {
             ${await userDetailsModal(store)}
             ${await Footer()}
         </body>
+        <script>
+            let clientParams = new URLSearchParams(window.location.search)
+
+            if (clientParams.has("trigger")) {
+                const action = clientParams.get("trigger")
+                alert("triggered by ", action)
+                clientParams.delete("trigger")
+                history.replaceState(null, null, "?"+clientParams.toString());
+                
+                switch (action) {
+                    case "fre":
+                        alert("FRE")
+                        document.getElementById('userDetailsModal').showModal(); 
+                        break;       
+                    case "session":
+                        console.log("Starting new session")
+                        window.location.reload(true)
+                        break;
+                }
+                    
+
+            }
+        <\/script>
     </html>
     `;
 };
@@ -1788,20 +1819,42 @@ var buildPostDetailsPage = async (store) => {
     `;
 };
 
-// src/handlers/generateAuthPage.js
-var generateAuthPage = async (store) => {
+// src/handlers/login.js
+var login = async (store) => {
+  if (store.user.slug) {
+    const sessionID = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/gi, "").substring(0, Math.random() * (63 - 57) + 57);
+    await store.env.SESSIONS.put(sessionID, store.user.slug);
+    store.resp.headers.append("Set-Cookie", `D_SID=${sessionID}; HttpOnly; path=/; Secure; SameSite=Strict;`);
+    store.resp.headers.append("Set-Cookie", `D_UNAME=${store.user.name}; path=/; Secure; SameSite=Strict;`);
+    store.resp.headers.append("Set-Cookie", `D_UTHUMB=${store.user.thumb}; path=/; Secure; SameSite=Strict;`);
+    store.resp.headers.append("Set-Cookie", `D_UHNRIFIC=${store.user.honorific}; path=/; Secure; SameSite=Strict;`);
+    store.resp.headers.append("Set-Cookie", `D_UFLAIR=${store.user.flair}; path=/; Secure; SameSite=Strict;`);
+    store.resp.headers.append("Set-Cookie", `D_UROLE=${store.user.role}; path=/; Secure; SameSite=Strict;`);
+    store.resp.status = 302;
+    const redirectTo = new URL(store.request.url).searchParams.get("redirectTo") || "/";
+    const dest = `${store.env.HOST}${redirectTo}?trigger=${store.page.fre ? "fre" : "session"}`;
+    console.log("in Login page", dest);
+    store.resp.headers.append("Location", dest);
+  } else {
+    throw new Error(503, { cause: "Login: User slug is not available" });
+  }
+};
+
+// src/handlers/logout.js
+var logout = async (store) => {
+  store.resp.content = "Logging Out...";
+  if (store.page.cookies.D_SID) {
+    console.log(`Deleting session ${store.page.cookies.D_SID}`);
+    await store.env.SESSIONS.delete(store.page.cookies.D_SID);
+  }
+  store.resp.headers.append("Set-Cookie", `D_SID=""; HttpOnly; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  store.resp.headers.append("Set-Cookie", `D_UNAME=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  store.resp.headers.append("Set-Cookie", `D_UTHUMB=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  store.resp.headers.append("Set-Cookie", `D_UHNRIFIC=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  store.resp.headers.append("Set-Cookie", `D_UFLAIR=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  store.resp.headers.append("Set-Cookie", `D_UROLE=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
   store.resp.status = 302;
-  store.resp.content = "AUTHENTICATING...";
-  const bagID = new URL(store.request.url).searchParams.get("loginID");
-  const sessionID = await store.env.BAG.get(bagID);
-  console.log("BAg ID: ", bagID);
-  console.log(`Session ID from BAG: ${sessionID}`);
-  const dest = new URL(store.request.url).searchParams.get("redirectTo");
-  console.log(`Redirecting to: ${dest}`);
-  const cookie = `sessionID=${sessionID}; path=/; HttpOnly; Secure; SameSite=Strict;`;
-  store.resp.headers.set("Set-Cookie", cookie);
-  store.resp.headers.set("Location", dest);
-  await new Promise((r) => setTimeout(r, 2e3));
+  store.resp.headers.append("Location", `${store.env.HOST}`);
 };
 
 // src/handlers/buildErrorPage.js
@@ -1818,6 +1871,22 @@ var buildErrorPage = async (store, e) => {
         `;
 };
 
+// src/handlers/showAuthPage.js
+var showAuthPage = async (store) => {
+  store.resp.status = 200;
+  const dest = new URL(store.request.url).searchParams.get("redirectTo") || "/";
+  console.log("in Auth page", dest);
+  store.resp.content = /*html*/
+  `
+        <article class="min-h-screen">
+            <p>Logging in....</p>
+        </article>
+        <script>
+            window.location.replace("${store.env.HOST}${dest}")
+        <\/script>
+    `;
+};
+
 // src/server.js
 var routes = {
   // API Routes
@@ -1825,12 +1894,13 @@ var routes = {
   "GET/api/raiseError": [() => {
     throw new Error(418, { cause: "This is TEAPOT!" });
   }],
-  "POST/api/signinGoogleUser": [signinGoogleUser],
+  "POST/api/signinGoogleUser": [getGoogleUser, login],
   //createSession, 
   // Static Routes
   "GET/": [buildHomePage, generateHTML],
   "GET/about": [buildAboutPage, generateHTML],
-  "GET/authenticate": [generateAuthPage],
+  "GET/authenticate": [showAuthPage],
+  "GET/logout": [logout],
   // Dynamic Routes
   "GET/p/:id": [buildPostDetailsPage, generateHTML]
 };
@@ -1852,12 +1922,13 @@ var server_default = {
         role: null,
         level: null,
         sessionID: null,
-        googleID: null,
-        appleID: null
+        email: null
       },
       request,
       env,
       page: {
+        fre: false,
+        cookies: parseCookie(request.headers.get("cookie")),
         path: url.pathname,
         // redirectTo  : url.searchParams.get("redirectTo"),
         redirectTo: null,
@@ -1874,6 +1945,7 @@ var server_default = {
         headers: new Headers()
       }
     };
+    console.log(store.page.cookies);
     if (url.pathname.startsWith("/api")) {
       store.resp.headers.append("content-type", "application/json;charset=UTF-8");
       store.resp.headers.append("Powered-by", "API: Pika Pika Pika Choooo");
@@ -1899,12 +1971,6 @@ var server_default = {
     try {
       for (const handler of handlers) {
         await handler(store);
-      }
-      if (store.page.redirectTo) {
-        let destination = `${url.protocol}//${url.host}${store.page.redirectTo}`;
-        console.log("REDIRECTING TO: ", destination);
-        store.page.redirectTo = null;
-        return Response.redirect(destination, 302);
       }
     } catch (e) {
       console.log(e);

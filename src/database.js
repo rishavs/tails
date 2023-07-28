@@ -24,10 +24,8 @@ export const fetchAllPosts = async (store) => {
 
 export const fetchSpecificPostById = async (store) => {
     let conn = connectToPlanetScale(store)
-    console.log("ID IS: ", store.page.id)
 
     let result = await conn.execute('select * from posts where id=:id', {id : store.page.id})
-    console.log("ID IS: ", store.page.id)
     if (result.rows.length == 0) {
         let err = new Error()
         err.message = "404"
@@ -37,17 +35,17 @@ export const fetchSpecificPostById = async (store) => {
     return result.rows
 }
 
-export const getUserUnqid = async (store) => {
+export const getUserDetails = async (store) => {
     let conn = connectToPlanetScale(store)
-    let query = 'select slug from users where google_id=?)'
-    let result = await conn.execute(query, [store.page.googleID])
-    return result
+    let query = 'select * from users where google_id=:email or apple_id=:email limit 1'
+    let result = await conn.execute(query, {email : store.user.email})
+    return result.rows
 }
 
-export const addGoogleUser = async (store, newUser) => {
+export const addGoogleUser = async (store) => {
     let conn = connectToPlanetScale(store)
     let query = `INSERT IGNORE INTO users (slug, name, thumb, honorific, flair, role, level, google_id) 
         VALUES (:slug, :name, :thumb, :honorific, :flair, :role, :level, :google_id)`
-    let result = await conn.execute(query, {slug : newUser.slug, name : newUser.name, thumb : newUser.thumb, honorific : newUser.honorific, flair : newUser.flair, role : newUser.role, level : newUser.level, google_id : newUser.googleID})
+    let result = await conn.execute(query, {slug : store.user.slug, name : store.user.name, thumb : store.user.thumb, honorific : store.user.honorific, flair : store.user.flair, role : store.user.role, level : store.user.level, google_id : store.user.google_id})
     return result
 }

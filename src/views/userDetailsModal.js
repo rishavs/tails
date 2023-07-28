@@ -12,15 +12,7 @@ export const userDetailsModal = async (store) => {
             </form>
         </dialog>
         <script>
-            if (window.location.search) {
-                const params = new URL(document.location).searchParams;
-                const trigger = params.get("triggerFragment");
-                if (trigger == "userDetailsModal") {
-                    const modal = document.getElementById('userDetailsModal');
-                    modal.showModal();
-                    console.log(document.cookie)
-                }
-            }
+
 
         </script>
 

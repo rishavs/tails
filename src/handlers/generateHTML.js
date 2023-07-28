@@ -3,6 +3,7 @@ import { FiltersBar } from "../views/filtersBar.js";
 import { loginModal } from "../views/loginModal.js";
 import { userDetailsModal } from "../views/userDetailsModal.js";
 import { Footer } from "../views/footer.js";
+import { parseCookie } from "../utils.js";
 
 
 export const generateHTML = async (store) => {
@@ -28,7 +29,7 @@ export const generateHTML = async (store) => {
             <script src="https://apis.google.com/js/platform.js" async defer></script>
         </head>
         <body class="">
-            ${await Header()}
+            ${await Header(store)}
             ${await FiltersBar()}
             <div class="px-16 mt-16">
                 ${store.page.content}
@@ -37,6 +38,29 @@ export const generateHTML = async (store) => {
             ${await userDetailsModal(store)}
             ${await Footer()}
         </body>
+        <script>
+            let clientParams = new URLSearchParams(window.location.search)
+
+            if (clientParams.has("trigger")) {
+                const action = clientParams.get("trigger")
+                alert("triggered by ", action)
+                clientParams.delete("trigger")
+                history.replaceState(null, null, "?"+clientParams.toString());
+                
+                switch (action) {
+                    case "fre":
+                        alert("FRE")
+                        document.getElementById('userDetailsModal').showModal(); 
+                        break;       
+                    case "session":
+                        console.log("Starting new session")
+                        window.location.reload(true)
+                        break;
+                }
+                    
+
+            }
+        </script>
     </html>
     `
 }

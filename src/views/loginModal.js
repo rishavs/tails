@@ -14,6 +14,7 @@ export const loginModal = async (store) => {
                     data-ux_mode="redirect"
                     data-login_uri="/api/signinGoogleUser?redirectTo=${encodeURIComponent(store.page.path)}"
                     data-nonce="${store.page.nonce}"
+                    data-skip_prompt_cookie="D_SID"
                     data-auto_select="true"
                     data-itp_support="true">
                 </div>
