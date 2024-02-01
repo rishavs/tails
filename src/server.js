@@ -106,7 +106,7 @@ export default {
             env         : env,
             page            : {
                 fre         : false,
-                cookies     : parseCookie(request.headers.get('cookie')),
+                cookies     : null,
                 path        : url.pathname,
                 // redirectTo  : url.searchParams.get("redirectTo"),
                 redirectTo  : null,
@@ -123,7 +123,7 @@ export default {
                 headers     : new Headers()
             }
         }
-        console.log(store.page.cookies)
+        console.log("COOKIES: ",  request.headers.get('cookie'))
         // ------------------------------------------
         // handle APIs
         // ------------------------------------------

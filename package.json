@@ -3,19 +3,14 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"dev": "run-p dev:*",
-		"dev:wrangler": "wrangler pages dev dist --live-reload --port 3000 --kv=SESSIONS --kv=BAG",
-		"dev:esbuild": "esbuild --bundle src/server.js --format=esm --watch --outfile=dist/_worker.js",
-		"build": "esbuild --bundle src/server.js --format=esm --outfile=dist/_worker.js",
+		"server": "wrangler pages dev dist --live-reload --port 3000",
+
 		"deploy": "wrangler pages publish dist"
 	},
 	"dependencies": {
-		"@planetscale/database": "*",
-		"jose": "^4.14.4"
+		"@planetscale/database": "latest"
 	},
 	"devDependencies": {
-		"esbuild": "*",
-		"npm-run-all": "*",
-		"wrangler": "*"
+		"wrangler": "latest"
 	}
 }
