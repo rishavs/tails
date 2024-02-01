@@ -3,14 +3,25 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"server": "wrangler pages dev dist --live-reload --port 3000",
+		"dev": "run-p dev:*",
+		"dev:wrangler": "wrangler pages dev dist --live-reload --port 3000",
+		"dev:esbuild": "esbuild --bundle src/server.js --format=esm --watch --outfile=dist/_worker.js",
 
+		"style": "tailwindcss -i ./builder.css -o ./dist/pub/styles.css --watch",
+		"build": "esbuild --bundle src/server.js --format=esm --outfile=dist/_worker.js",
 		"deploy": "wrangler pages publish dist"
 	},
 	"dependencies": {
-		"@planetscale/database": "latest"
+		"@planetscale/database": "latest",
+		"nanoid": "latest"
 	},
 	"devDependencies": {
-		"wrangler": "latest"
+		"wrangler": "latest",
+		"esbuild": "latest",
+		"tailwindcss": "latest",
+		"@tailwindcss/forms": "latest",
+		"@tailwindcss/typography": "latest",
+		"daisyui": "latest",
+		"npm-run-all": "latest"
 	}
 }

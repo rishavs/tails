@@ -1,42 +1,23 @@
-import { Header } from "../views/header.js";
-import { FiltersBar } from "../views/filtersBar.js";
-import { loginModal } from "../views/loginModal.js";
-import { userDetailsModal } from "../views/userDetailsModal.js";
-import { Footer } from "../views/footer.js";
-import { parseCookie } from "../utils.js";
-
-
-export const generateHTML = async (store) => {
-    store.resp.status = 200
-    store.resp.content =     /*html*/`
+export const generateHTML = (ctx) => {
+    ctx.res.status = 200
+    ctx.res.content =     /*html*/`
     <html lang="en" data-theme="emerald">
         <head>
             <meta charset="UTF-8">
-            <title>${store.page.title}</title>
+            <title>${ctx.page.title}</title>
             <link rel="icon" type="image/x-icon" href="/pub/favicon.ico">
 
-            <meta name="description" content="${store.page.descr}">
+            <meta name="description" content="${ctx.page.descr}">
             <head prefix="og: http://ogp.me/ns#">
             <meta property="og:type" content="article">
             <!-- More elements slow down JSX, but not template literals. -->
-            <meta property="og:title" content="${store.page.title}">
+            <meta property="og:title" content="${ctx.page.title}">
 
-            <script src="https://cdn.tailwindcss.com"></script>
-            <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.min.css" rel="stylesheet" type="text/css" />
-            <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@latest/pace-theme-default.min.css">
-
-            <script src="https://apis.google.com/js/platform.js" async defer></script>
         </head>
         <body class="">
-            ${await Header(store)}
-            ${await FiltersBar()}
             <div class="px-16 mt-16">
-                ${store.page.content}
+                ${ctx.page.html}
             </div>
-            ${await loginModal(store)}
-            ${await userDetailsModal(store)}
-            ${await Footer()}
         </body>
         <script>
             let clientParams = new URLSearchParams(window.location.search)
