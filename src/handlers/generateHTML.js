@@ -18,6 +18,8 @@ export const generateHTML = (ctx) => {
             <meta property="og:type" content="article">
             <meta property="og:title" content="${ctx.page.title}">
 
+            <script src="https://accounts.google.com/gsi/client" async></script>
+
             <link href="/pub/styles.css" rel="stylesheet" type="text/css">
             <script src="/pub/main.js" type="module" ></script>
 
