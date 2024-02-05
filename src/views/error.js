@@ -17,7 +17,7 @@ let haikus =  {
         `Five hundred, a sigh, Server's internal outcry, A fix, we must apply.`,
         `Internal error screams, Shattering digital dreams, Not as easy as it seems.`,
         `Server's silent plea, Five hundred, a mystery, In code, the key.`,
-        `A glitch in the core, Five hundred, can't ignore, Need to rectx.`,
+        `A glitch in the core, Five hundred, can't ignore, Need to restore.`,
         `A 500 plight, In the server's endless night, Seeking the light.`
     ], 
     503: [
@@ -29,26 +29,26 @@ let haikus =  {
     ]
 }
 
-export const buildErrorPage = (ctx, e) => {
-    let errorCode = e.message || 500
-    let errorMsg = e.cause || "Internal Server Error"
-
-    ctx.page.title = "ERROR Page"
-    ctx.page.descr = "This is the error page"
-    ctx.page.html = /*html*/`
-        <article class="prose lg:prose-lg text-center pt-16">
-            <h1>Error ${errorCode} :( </h1>
-            <h3> 
-                ${
-                    errorCode == 401 ? "You are not authorized to access this page" :
-                    errorCode == 404 ? "Page Not Found" :
-                    errorCode == 503 ? "Service Unavailable" :
-                    "Unknown Error"
-                }
-            </h3>
-            <small> <i>
-                ${haikus[errorCode][Math.floor(Math.random() * haikus[errorCode].length)]}
-            </i></small>
-        </article>
+let view = ( errorCode, errorMsg) => {
+    return /*html*/`
+    <article class="prose lg:prose-lg text-center pt-16">
+        <h1>Error ${errorCode}: ${errorMsg}</h1>
+        <h3> 
+            ${
+                errorCode == 401 ? "You are not authorized to access this page" :
+                errorCode == 404 ? "Page Not Found" :
+                errorCode == 503 ? "Service Unavailable" :
+                "Unknown Error"
+            }
+        </h3>
+        <small> <i>
+            ${haikus[errorCode][Math.floor(Math.random() * haikus[errorCode].length)]}
+        </i></small>
+    </article>
     `
+}
+
+export const errorPage =  (errorCode, errorMsg) => {
+    document.title = `Error ${errorCode}`
+    document.querySelector('main')!.innerHTML = view( errorCode, errorMsg)
 }

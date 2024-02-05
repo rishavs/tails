@@ -19,3 +19,15 @@ export const PostCategories  = {
 	cute 	: "Cute Stuff",
 	else 	: "Everything Else",
 }
+
+export const CommunityLinks = {
+	"faqs": "FAQs",
+	"rules": "Guidelines",
+	"cont": "Contact Us",
+}
+
+export const LegalLinks = {
+	"terms": "Terms of Use",
+	"priv": "Privacy Policy",
+	"cook": "Cookie Policy",
+}

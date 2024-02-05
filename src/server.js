@@ -3,6 +3,7 @@ import { sayHello } from "./handlers/sayHello";
 import { buildAboutPage } from "./handlers/buildAboutPage";
 import { generateHTML } from "./handlers/generateHTML";
 import { PostCategories } from "./defs";
+import { buildErrorPage } from "./handlers/buildErrorPage";
 
 let apis = {
     "GET/api/hello"          : [setHeaders, sayHello],
@@ -32,6 +33,7 @@ export default {
 			req: {
                 raw: request,
 				url: new URL(request.url),
+                path: url.pathname.toLowerCase(),
                 cookies: {},
                 formData: {},
 			},
@@ -133,7 +135,7 @@ export default {
 
                 // match dynamic routes
                 } else {
-                    let urlFrag = ctx.req.url.pathname.toLowerCase().split('/')
+                    let urlFrag = ctx.req.path.split('/')
                     if (urlFrag[1] && Object.keys(PostCategories).includes(urlFrag[1])) {
                             urlFrag[1] = ":cat"
                     }
@@ -144,39 +146,43 @@ export default {
                     console.log("Dynamic route: ", route)
                 }
 
-                if (route in pages) {
-                    try {
+                try {
+                    if (route in pages) {
                         for (const handler of pages[route]) {
                             handler(ctx)
                         }
-                    } catch (e) {
-                        console.log(e)
+                        ctx.res.status = 200
 
-                        // 500 Internal Server Error - All unhandled errors
-                        // 501 Not Implemented
-                        // 502 Bad Gateway
-                        // 503 Service Unavailable - All handled errors
-                        // 504 Gateway Timeout
+                    } else {
+                        throw new Error("404", { cause: "Not Found"})
 
-                        if (["400", "401", "404", "503"].includes(e.message)) {
-                            ctx.res.status = parseInt(e.message)
-                        } else {
-                            ctx.res.status = 500
-                        }
-                        
-                        ctx.res.content = JSON.stringify({ 
-                            error: e.cause || "Internal Server Error"
-                        })
                     }
-                } else {
-                    ctx.res.status = 404
+
+
+                } catch (e) {
+                    console.log(e)
+
+                    // 500 Internal Server Error - All unhandled errors
+                    // 501 Not Implemented
+                    // 502 Bad Gateway
+                    // 503 Service Unavailable - All handled errors
+                    // 504 Gateway Timeout
+
+                    if (["400", "401", "404", "503"].includes(e.message)) {
+                        ctx.res.status = parseInt(e.message)
+                    } else {
+                        ctx.res.status = 500
+                    }
+                    
                     // ctx.res.content = JSON.stringify({ 
-                    //     error: "Not Found"
+                    //     error: e.cause || "Internal Server Error"
                     // })
+                    setHeaders(ctx)
+                    buildErrorPage(ctx, e)
+                    generateHTML(ctx)
                 }
-            }
-
-
+                break;
+        }
         return new Response(ctx.res.content, { status: ctx.res.status, headers: ctx.res.headers})
     },
 }
