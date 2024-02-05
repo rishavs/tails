@@ -23,20 +23,6 @@ let url = new URL(document.URL);
 // } 
 
 // ---------------------------------------
-// Attach DOM Fragments and start hydrating
-// ---------------------------------------
-
-// ---------------------------------------
-// Hydrate summary Cards
-// ---------------------------------------
-
-// ---------------------------------------
-// Mark the active page in the Drawer
-// ---------------------------------------
-// ---------------------------------------
-// Update the Header
-// ---------------------------------------
-// ---------------------------------------
 // Show the FRE
 // ---------------------------------------
 
@@ -52,18 +38,24 @@ let url = new URL(document.URL);
 // Show floaters
 // ---------------------------------------
 
+
+// ---------------------------------------
+// Hydrate summary Cards
+// ---------------------------------------
+
+
 // ---------------------------------------
 // Setup Google sign-in
 // ---------------------------------------
 if (!localStorage.getItem('D_USER_SLUG')) {
 
-    let showLoginControls = false
+    let showLoginControls = true
     let loginControlsContainer = document.getElementById("loginControls");
     if (loginControlsContainer && showLoginControls) {
 
         google.accounts.id.initialize({
             client_id: "326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com",
-            login_uri: `${url.origin}/api/login/google?redirectTo=${encodeURIComponent(url.pathname)}`,
+            login_uri: `${url.origin}/api/signin/google?redirectTo=${encodeURIComponent(url.pathname)}`,
             context: "signin",
             ux_mode: "redirect",
             prompt_parent_id: 'loginControls',

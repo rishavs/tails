@@ -1,4 +1,4 @@
-export const parseCookie = (str) => {
+export const parseCookies = (str) => {
     return str
         .split(';')
         .map(v => v.split('='))

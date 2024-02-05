@@ -1,15 +1,10 @@
-import { parseCookie } from '../utils'
+export const createSession = (ctx) => {
+    // if db has user details, add to ctx
+    // else return ctx without user info
 
+    console.log("Creating new session...")
 
-export const createSession = async (store) => {
-
-    // ----------------------------------------
-    // Create a JWT with user info
-    // ----------------------------------------
-
-
-    // ----------------------------------------
-    // Set the JWT in a cookie
-    // ----------------------------------------
+    ctx.res.status = 200
+    ctx.res.content = JSON.stringify({ message: "Hello from the API" })
 
 }

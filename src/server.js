@@ -4,9 +4,15 @@ import { buildAboutPage } from "./handlers/buildAboutPage";
 import { generateHTML } from "./handlers/generateHTML";
 import { PostCategories } from "./defs";
 import { buildErrorPage } from "./handlers/buildErrorPage";
+import { signinGoogleUser } from "./handlers/signinGoogleUser";
+import { getUserInfo } from "./handlers/getUserInfo";
+import { createSession } from "./handlers/createSession";
+
+import { parseCookies } from "./utils";
 
 let apis = {
     "GET/api/hello"          : [setHeaders, sayHello],
+    "POST/api/signin/google" : [setHeaders, signinGoogleUser, getUserInfo, createSession],
 }
 
 let pages = {
@@ -14,6 +20,8 @@ let pages = {
     "/search"       : [setHeaders, buildAboutPage, generateHTML],
     "/p/new"        : [setHeaders, buildAboutPage, generateHTML],
     "/u/me"         : [setHeaders, buildAboutPage, generateHTML],
+
+    "/err/signin"  : [setHeaders, buildErrorPage, generateHTML],
 
     "/:cat"         : [setHeaders, buildAboutPage, generateHTML],
     "/p/:slug"      : [setHeaders, buildAboutPage, generateHTML],
@@ -24,7 +32,8 @@ let pages = {
 export default {
     async fetch(request, env) {
 
-        let url = new URL(request.url)
+        let url = new URL(request.url);
+        let params = new URLSearchParams(url.search);
 
 		// ------------------------------------------
         // Create Context Store
@@ -32,10 +41,10 @@ export default {
 		let ctx  = {
 			req: {
                 raw: request,
-				url: new URL(request.url),
+				url: url,
                 path: url.pathname.toLowerCase(),
-                cookies: {},
-                formData: {},
+                cookies: parseCookies(request.headers.get('cookie')),
+                params: params,
 			},
 			env: env,
             page: {
@@ -48,7 +57,11 @@ export default {
 				headers: new Headers(),
 				content: "",
 			},
+            renderOnAPIErr: false,
+
 		} 
+
+        // console.log("Context: ", ctx)
 
         // ------------------------------------------
         // Set SID
@@ -100,10 +113,10 @@ export default {
                 if (route in apis) {
                     try {
                         for (const handler of apis[route]) {
-                            handler(ctx)
+                            await handler(ctx)
                         }
                     } catch (e) {
-                        console.log(e)
+                        console.error(e)
 
                         // 500 Internal Server Error - All unhandled errors
                         // 501 Not Implemented
@@ -116,6 +129,13 @@ export default {
                         } else {
                             ctx.res.status = 500
                         }
+                        
+                        // Render Error page for special hybrid APIs like Auth
+                        // if (ctx.renderOnAPIErr) {
+                        //     setHeaders(ctx)
+                        //     buildErrorPage(ctx, e)
+                        //     generateHTML(ctx)
+                        // }
                         
                         // ctx.res.content = JSON.stringify({ 
                         //     error: e.cause || "Internal Server Error"
@@ -149,7 +169,7 @@ export default {
                 try {
                     if (route in pages) {
                         for (const handler of pages[route]) {
-                            handler(ctx)
+                            await handler(ctx)
                         }
                         ctx.res.status = 200
 
@@ -158,9 +178,8 @@ export default {
 
                     }
 
-
                 } catch (e) {
-                    console.log(e)
+                    console.error(e)
 
                     // 500 Internal Server Error - All unhandled errors
                     // 501 Not Implemented
@@ -174,9 +193,7 @@ export default {
                         ctx.res.status = 500
                     }
                     
-                    // ctx.res.content = JSON.stringify({ 
-                    //     error: e.cause || "Internal Server Error"
-                    // })
+                    // Render Error page
                     setHeaders(ctx)
                     buildErrorPage(ctx, e)
                     generateHTML(ctx)
