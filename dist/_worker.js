@@ -42,14 +42,14 @@ var PostCategories = {
   else: "Everything Else"
 };
 var CommunityLinks = {
-  "faqs": "FAQs",
-  "rules": "Guidelines",
-  "cont": "Contact Us"
+  faqs: "FAQs",
+  rules: "Guidelines",
+  cont: "Contact Us"
 };
 var LegalLinks = {
-  "terms": "Terms of Use",
-  "priv": "Privacy Policy",
-  "cook": "Cookie Policy"
+  terms: "Terms of Use",
+  priv: "Privacy Policy",
+  cook: "Cookie Policy"
 };
 
 // src/views/drawer.js
@@ -130,18 +130,64 @@ var header = (ctx) => {
             </svg>
     
         </button>
-        <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-sm lg:btn-md">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 lg:w-6 lg:h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+   
+        <div id="loginControls" class="mx-1 flex items-center" >
+            <a href="/p/new" class="btn btn-square btn-error btn-outline mx-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-        
+
+            </a>
+
+            <div class="dropdown dropdown-end mx-1">
+                <label tabindex="0" class="btn btn-square btn-error btn-outline avatar p-1">
+                    <img class="rounded" src="/pub/bm.png" />
+                </label>
+                <ul tabindex="0" class="z-20 mt-3 p-2 shadow menu lg:menu-lg dropdown-content bg-base-200 rounded-box w-52">
+                    <li>
+                        <a class="justify-between">
+                            Profile
+                            <span class="badge">New</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="justify-between" onclick="theme_modal.showModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 lg:w-6 lg:h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+                            </svg>
+                            Themes
+                            <span class="badge">New</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="signout_action"> Signout </a>
+                    </li>
+                </ul>
             </div>
-            
-            <!-- Theme picker! -->
-            <ul tabindex="0" class="dropdown-content z-[1] p-2 shadow-2xl bg-base-300 rounded-box w-52">
-                <li><input type="radio" name="theme-dropdown" class="theme-controller btn btn-sm btn-block btn-ghost justify-start" aria-label="Default" value="default"/></li>
-                ${[
+        </div>
+    </div>
+    `
+  );
+};
+
+// src/views/themeModal.js
+var themeModal = () => {
+  return (
+    /*html*/
+    `
+    <dialog id="theme_modal" class="modal modal-bottom lg:modal-middle">
+        <div class="modal-box">
+
+            <div class="modal-action">
+                <form method="dialog">
+                <!-- if there is a button in form, it will close the modal -->
+                    <button class="btn btn-square">\u2715</button>
+                </form>
+            </div>
+            <h3 class="font-bold text-lg text-center">Theme Picker</h3>
+            <p class="py-4 text-center">Select a theme for Digglu from the collection below! </p>     
+            <div class="divider"></div>   
+            ${[
       "acid",
       "aqua",
       "aquafina",
@@ -180,48 +226,12 @@ var header = (ctx) => {
     ].map((theme) => (
       /*html*/
       `
-                    <li><input type="radio" name="theme-dropdown" class="theme-controller btn btn-sm btn-block btn-ghost justify-start" aria-label="${theme}" value="${theme}"/></li>
-                    `
+                <input type="radio" name="theme-buttons" class="theme-controller mx-1 my-2 btn join-item" aria-label="${theme}" value="${theme}" />
+                `
     )).join("")}
-            </ul>
         </div>
-    
-        <div id="loginControls" class="mx-1 flex items-center" >
-            <a href="/p/new" class="btn btn-square btn-error btn-outline mx-1">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-
-            </a>
-
-            <div class="dropdown dropdown-end mx-1">
-                <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-                    <div class="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <img src="/pub/bm.png" />
-                    </div>
-                </label>
-                <ul tabindex="0" class="z-20 mt-3 p-2 shadow menu lg:menu-lg dropdown-content bg-base-200 rounded-box w-52">
-                    <li>
-                        <a class="justify-between">
-                            Profile
-                            <span class="badge">New</span>
-                        </a>
-                    </li>
-                    <li>
-                        <label class="flex cursor-pointer gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
-                            <input type="checkbox" value="synthwave" class="toggle theme-controller"/>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                        </label>
-                    </li>
-                    <li>
-                        <a id="signout_action" onclick="signOut()"> Signout </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    `
+  </dialog>
+  `
   );
 };
 
@@ -244,10 +254,10 @@ var generateHTML = (ctx) => {
             <meta property="og:type" content="article">
             <meta property="og:title" content="${ctx.page.title}">
 
-            <script src="https://accounts.google.com/gsi/client" async><\/script>
 
             <link href="/pub/styles.css" rel="stylesheet" type="text/css">
-            <script src="/pub/main.js" type="module" ><\/script>
+            <script src="https://accounts.google.com/gsi/client" defer><\/script>
+            <script src="/pub/main.js" type="module" defer><\/script>
 
         </head>
 
@@ -315,6 +325,9 @@ var generateHTML = (ctx) => {
                                         
                 </div>
             </div>
+            <div id = "modals_container">
+                ${themeModal()}
+            </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
         
         
@@ -325,51 +338,67 @@ var generateHTML = (ctx) => {
 };
 
 // src/handlers/buildErrorPage.js
-var haikus = {
-  401: [
-    `Unauthorized here, Access denied, I fear, Login, to come near.`,
-    `Four zero one cries, Credentials, it denies, In secrecy, it lies.`,
-    `Access, it has fled, Four zero one, full of dread, "Not here," it has said.`,
-    `In the web's vast sea, Four zero one, not free, Where could the key be?`,
-    `A 401 blunder, Access, torn asunder, Lost in the web's thunder.`
-  ],
-  404: [
-    `Page not found,<br> oh dear, The path is no longer clear,<br> Lost in the web's frontier.`,
-    `Four zero four cries,<br> The sought page, a ghost, it lies,<br> In the web's vast skies.`,
-    `The page, it has fled,<br> Four zero four, full of dread,<br> "Not here," it has said.`,
-    `In the web's vast sea,<br> Four zero four, lost, carefree,<br> Where could the page be?`,
-    `A 404 blunder,<br> The page, torn asunder,<br> Lost in the web's thunder.`
-  ],
-  500: [
-    `Five hundred, a sigh, Server's internal outcry, A fix, we must apply.`,
-    `Internal error screams, Shattering digital dreams, Not as easy as it seems.`,
-    `Server's silent plea, Five hundred, a mystery, In code, the key.`,
-    `A glitch in the core, Five hundred, can't ignore, Need to rectx.`,
-    `A 500 plight, In the server's endless night, Seeking the light.`
-  ],
-  503: [
-    `Five zero three, a pause, Service unavailable, cause, Time to debug laws.`,
-    `Service, it retreats, Five zero three, it repeats, Until the issue depletes.`,
-    `Unavailable, it moans, Five zero three, it groans, In the server's twilight zones.`,
-    `A 503 blip, Service took a trip, Need to regain grip.`,
-    `Five zero three, a sign, Service, not in line, A solution, we must design.`
-  ]
+var errors = {
+  "401": {
+    msg: "You are not authorized to access this page",
+    haikus: [
+      `Unauthorized here, Access denied, I fear, Login, to come near.`,
+      `Four zero one cries, Credentials, it denies, In secrecy, it lies.`,
+      `Access, it has fled, Four zero one, full of dread, "Not here," it has said.`,
+      `In the web's vast sea, Four zero one, not free, Where could the key be?`,
+      `A 401 blunder, Access, torn asunder, Lost in the web's thunder.`
+    ]
+  },
+  "404": {
+    msg: "Page Not Found",
+    haikus: [
+      `Page not found,<br> oh dear, The path is no longer clear,<br> Lost in the web's frontier.`,
+      `Four zero four cries,<br> The sought page, a ghost, it lies,<br> In the web's vast skies.`,
+      `The page, it has fled,<br> Four zero four, full of dread,<br> "Not here," it has said.`,
+      `In the web's vast sea,<br> Four zero four, lost, carefree,<br> Where could the page be?`,
+      `A 404 blunder,<br> The page, torn asunder,<br> Lost in the web's thunder.`
+    ]
+  },
+  "500": {
+    msg: "Internal Server Error",
+    haikus: [
+      `Five hundred, a sigh, Server's internal outcry, A fix, we must apply.`,
+      `Internal error screams, Shattering digital dreams, Not as easy as it seems.`,
+      `Server's silent plea, Five hundred, a mystery, In code, the key.`,
+      `A glitch in the core, Five hundred, can't ignore, Need to rectx.`,
+      `A 500 plight, In the server's endless night, Seeking the light.`
+    ]
+  },
+  "503": {
+    msg: "Service Unavailable",
+    haikus: [
+      `Five zero three, a pause, Service unavailable, cause, Time to debug laws.`,
+      `Service, it retreats, Five zero three, it repeats, Until the issue depletes.`,
+      `Unavailable, it moans, Five zero three, it groans, In the server's twilight zones.`,
+      `A 503 blip, Service took a trip, Need to regain grip.`,
+      `Five zero three, a sign, Service, not in line, A solution, we must design.`
+    ]
+  }
 };
 var buildErrorPage = (ctx, e) => {
   let errCodeFromParams = ctx.req.params.get("code");
   let errMsgFromParams = ctx.req.params.get("msg");
-  console.log(`Error: ${errCodeFromParams} - ${errMsgFromParams}`);
-  let errorCode = e.message || 500;
-  let errorMsg = e.cause || errorCode == 401 ? "You are not authorized to access this page" : errorCode == 404 ? "Page Not Found" : errorCode == 503 ? "Service Unavailable" : "Unknown Error";
+  if (errCodeFromParams && !["400", "401", "404", "503"].includes(errCodeFromParams)) {
+    errCodeFromParams = "500";
+  }
+  let errorCode = parseInt(errCodeFromParams) || 500;
+  let errorMsg = errMsgFromParams || e.cause || errors[errorCode].msg;
+  let haiku = errors[errCodeFromParams] && errors[errCodeFromParams].haikus ? errors[errCodeFromParams].haikus[Math.floor(Math.random() * errors[errCodeFromParams].haikus.length)] : "";
+  console.log(`Error: ${errCodeFromParams} - ${errorMsg}`);
   ctx.page.title = "ERROR Page";
   ctx.page.descr = "This is the error page";
   ctx.page.html = /*html*/
   `
         <article class="prose lg:prose-lg text-center pt-16">
-            <h1>Error ${errorCode} :( </h1>
+            <h1>Error ${errCodeFromParams} :( </h1>
             <h3> ${errorMsg} </h3>
             <small> <i>
-                ${haikus[errorCode][Math.floor(Math.random() * haikus[errorCode].length)]}
+                ${haiku}
             </i></small>
         </article>
     `;
@@ -1488,6 +1517,19 @@ function createRemoteJWKSet(url, options) {
   return async (protectedHeader, token) => set.getKey(protectedHeader, token);
 }
 
+// node_modules/nanoid/url-alphabet/index.js
+var urlAlphabet = "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict";
+
+// node_modules/nanoid/index.browser.js
+var nanoid = (size = 21) => {
+  let id = "";
+  let bytes2 = crypto.getRandomValues(new Uint8Array(size));
+  while (size--) {
+    id += urlAlphabet[bytes2[size] & 63];
+  }
+  return id;
+};
+
 // node_modules/@planetscale/database/dist/sanitization.js
 function format(query, values) {
   return Array.isArray(values) ? replacePosition(query, values) : replaceNamed(query, values);
@@ -1794,9 +1836,42 @@ var checkIfUserBlocked = async (ctx, id) => {
   console.log(`Blocked`, result);
   return result.rows;
 };
+var getUserDetails = async (ctx, email) => {
+  let conn = connectToPlanetScale(ctx);
+  let query = "select * from users where google_id=:email or apple_id=:email limit 1";
+  let result = await conn.execute(query, { email });
+  return result.rows;
+};
+var addGoogleUser = async (ctx, user) => {
+  let conn = connectToPlanetScale(ctx);
+  let result = await conn.execute(
+    `
+        insert into users 
+        (id, slug, name, thumb, honorific, flair, role, level, stars, creds, gil, google_id) 
+        values 
+        (?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [user.id, user.slug, user.name, user.thumb, user.honorific, user.flair, user.role, user.level, user.stars, user.creds, user.gil, user.google_id]
+  );
+  console.log("User to be added: ", user);
+  console.log("Result of ad user to db: ", result);
+  return result;
+};
+var addNewSession = async (ctx, sessionId, userId, userAgent) => {
+  let conn = connectToPlanetScale(ctx);
+  let result = await conn.execute(
+    `
+        insert into sessions 
+        (id, user_id, user_agent) 
+        values 
+        (?, ?, ?)`,
+    [sessionId, userId, userAgent]
+  );
+  return result;
+};
 
 // src/handlers/signinGoogleUser.js
 var signinGoogleUser = async (ctx) => {
+  ctx.res.errRedirect = true;
   let formData = await ctx.req.raw.formData();
   let CSRFTokenInCookie = ctx.req.cookies.g_csrf_token;
   let CSRFTokenInPost = formData.get("g_csrf_token");
@@ -1817,24 +1892,50 @@ var signinGoogleUser = async (ctx) => {
     audience: ctx.env.GOOGLE_KEY_FULL
   });
   let resUserBlocked = await checkIfUserBlocked(ctx, payload.email);
-  console.log(`User Blocked: ${resUserBlocked}`);
   if (resUserBlocked.length != 0) {
     throw new Error("503", { cause: `This user id is blocked. 
-        You can no longer create an accont on Digglu` });
+        You can no longer create an account on Digglu` });
   }
   console.log(`User has been verified as "${payload.email}"`);
-};
-
-// src/handlers/getUserInfo.js
-var getUserInfo = (ctx) => {
-  console.log("Getting user info...");
-};
-
-// src/handlers/createSession.js
-var createSession = (ctx) => {
-  console.log("Creating new session...");
-  ctx.res.status = 200;
-  ctx.res.content = JSON.stringify({ message: "Hello from the API" });
+  let user = {};
+  let resUserExists = await getUserDetails(ctx, payload.email);
+  if (resUserExists.length == 0) {
+    console.log(`user doesn't exist`);
+    user.id = nanoid(32);
+    user.slug = nanoid(32);
+    user.name = payload.name;
+    user.thumb = `https://robohash.org/${user.slug}?set=set3`;
+    user.honorific = "Mx";
+    user.flair = "Nony is not a Mouse";
+    user.role = "user";
+    user.level = "wood";
+    user.stars = 0;
+    user.creds = 0;
+    user.gil = 0;
+    user.google_id = payload.email;
+    let resAddUser = await addGoogleUser(ctx, user);
+    console.log("adding user to db:", resAddUser);
+    if (resAddUser.rowsAffected != 1) {
+      throw new Error("503", { cause: "Unable to add user to DB" });
+    }
+    ctx.res.headers.append("Set-Cookie", `D_FRE=true; path=/; SameSite=Strict;`);
+  } else {
+    console.log(`user exists`);
+    user = resUserExists[0];
+  }
+  delete user.id;
+  delete user.google_id;
+  user.thumb = encodeURIComponent(user.thumb);
+  let sessionId = nanoid(32);
+  let userEncoded = encodeURIComponent(JSON.stringify(user));
+  let _ = addNewSession(ctx, sessionId, user.id, ctx.req.raw.headers.get("User-Agent") || "");
+  console.log("New User Session :", user);
+  ctx.res.headers.append("Set-Cookie", `D_SID=${sessionId}; path=/; HttpOnly; Secure; SameSite=Strict;`);
+  ctx.res.headers.append("Set-Cookie", `D_NEW_SESSION=${userEncoded}; path=/; SameSite=Strict;`);
+  let redirectTo = ctx.req.url.origin + ctx.req.url.searchParams.get("redirectTo") || ctx.req.url.origin + "/";
+  console.log(`redirectTo: ${redirectTo}`);
+  ctx.res.status = 302;
+  ctx.res.headers.append("Location", redirectTo);
 };
 
 // src/utils.js
@@ -1845,21 +1946,27 @@ var parseCookies = (str) => {
   }, {});
 };
 
-// src/server.js
-var apis = {
-  "GET/api/hello": [setHeaders, sayHello],
-  "POST/api/signin/google": [setHeaders, signinGoogleUser, getUserInfo, createSession]
+// src/handlers/signout.js
+var signout = async (store) => {
+  store.resp.content = "Logging Out...";
+  store.resp.status = 302;
+  store.resp.headers.append("Location", `${store.env.HOST}`);
 };
-var pages = {
-  "/": [setHeaders, buildAboutPage, generateHTML],
-  "/search": [setHeaders, buildAboutPage, generateHTML],
-  "/p/new": [setHeaders, buildAboutPage, generateHTML],
-  "/u/me": [setHeaders, buildAboutPage, generateHTML],
-  "/err/signin": [setHeaders, buildErrorPage, generateHTML],
-  "/:cat": [setHeaders, buildAboutPage, generateHTML],
-  "/p/:slug": [setHeaders, buildAboutPage, generateHTML],
-  "/u/:slug": [setHeaders, buildAboutPage, generateHTML],
-  "/c/:slug": [setHeaders, buildAboutPage, generateHTML]
+
+// src/server.js
+var routes = {
+  "GET/api/hello": [setHeaders, sayHello],
+  "POST/api/signin/google": [setHeaders, signinGoogleUser],
+  "GET/": [setHeaders, buildAboutPage, generateHTML],
+  "GET/search": [setHeaders, buildAboutPage, generateHTML],
+  "GET/p/new": [setHeaders, buildAboutPage, generateHTML],
+  "GET/u/me": [setHeaders, buildAboutPage, generateHTML],
+  "GET/error": [setHeaders, buildErrorPage, generateHTML],
+  "GET/signout": [setHeaders, signout],
+  "GET/:cat": [setHeaders, buildAboutPage, generateHTML],
+  "GET/p/:slug": [setHeaders, buildAboutPage, generateHTML],
+  "GET/u/:slug": [setHeaders, buildAboutPage, generateHTML],
+  "GET/c/:slug": [setHeaders, buildAboutPage, generateHTML]
 };
 var server_default = {
   async fetch(request, env) {
@@ -1882,68 +1989,62 @@ var server_default = {
       res: {
         status: 200,
         headers: new Headers(),
-        content: ""
+        content: "",
+        errRedirect: null,
+        successRedirect: null
       },
-      renderOnAPIErr: false
+      user: null
     };
-    let route = "";
-    switch (true) {
-      case url.pathname.startsWith("/pub"):
-        return env.ASSETS.fetch(request);
-      case url.pathname.startsWith("/api"):
-        route = request.method + url.pathname;
-        if (route in apis) {
-          try {
-            for (const handler of apis[route]) {
-              await handler(ctx);
-            }
-          } catch (e) {
-            console.error(e);
-            if (["400", "401", "404", "503"].includes(e.message)) {
-              ctx.res.status = parseInt(e.message);
-            } else {
-              ctx.res.status = 500;
-            }
+    if (request.method == "OPTIONS") {
+      ctx.res.status = 200;
+      return new Response(ctx.res.content, { status: ctx.res.status, headers: ctx.res.headers });
+    }
+    if (url.pathname.startsWith("/pub")) {
+      return env.ASSETS.fetch(request);
+    }
+    try {
+      let route = request.method + url.pathname;
+      if (route in routes) {
+        for (const handler of routes[route]) {
+          await handler(ctx);
+        }
+      } else {
+        let urlFrag = ctx.req.path.split("/");
+        if (urlFrag[1] && Object.keys(PostCategories).includes(urlFrag[1])) {
+          urlFrag[1] = ":cat";
+        }
+        if (urlFrag[2]) {
+          urlFrag[2] = ":slug";
+        }
+        route = request.method + urlFrag.join("/");
+        console.log("Dynamic route: ", route);
+        if (route in routes) {
+          for (const handler of routes[route]) {
+            await handler(ctx);
           }
         } else {
-          ctx.res.status = 404;
+          throw new Error("404", { cause: "Not Found" });
         }
-        break;
-      default:
-        if (url.pathname in pages) {
-          route = url.pathname;
-        } else {
-          let urlFrag = ctx.req.path.split("/");
-          if (urlFrag[1] && Object.keys(PostCategories).includes(urlFrag[1])) {
-            urlFrag[1] = ":cat";
-          }
-          if (urlFrag[2]) {
-            urlFrag[2] = ":slug";
-          }
-          route = urlFrag.join("/");
-          console.log("Dynamic route: ", route);
-        }
-        try {
-          if (route in pages) {
-            for (const handler of pages[route]) {
-              await handler(ctx);
-            }
-            ctx.res.status = 200;
-          } else {
-            throw new Error("404", { cause: "Not Found" });
-          }
-        } catch (e) {
-          console.error(e);
-          if (["400", "401", "404", "503"].includes(e.message)) {
-            ctx.res.status = parseInt(e.message);
-          } else {
-            ctx.res.status = 500;
-          }
-          setHeaders(ctx);
-          buildErrorPage(ctx, e);
-          generateHTML(ctx);
-        }
-        break;
+      }
+    } catch (e) {
+      console.error(e);
+      if (["400", "401", "404", "503"].includes(e.message)) {
+        ctx.res.status = parseInt(e.message);
+      } else {
+        ctx.res.status = 500;
+      }
+      if (ctx.res.errRedirect) {
+        let params2 = new URLSearchParams({
+          "code": ctx.res.status,
+          "msg": e.cause
+        });
+        return Response.redirect(`${url.origin}/error?${params2.toString()}`, 302);
+      }
+      if (!url.pathname.startsWith("/api")) {
+        setHeaders(ctx);
+        buildErrorPage(ctx, e);
+        generateHTML(ctx);
+      }
     }
     return new Response(ctx.res.content, { status: ctx.res.status, headers: ctx.res.headers });
   }

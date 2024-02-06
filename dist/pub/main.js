@@ -1,6 +1,15 @@
 // ---------------------------------------
 // Utilities
 // ---------------------------------------
+const parseCookies = (str) => {
+    return str
+        .split(';')
+        .map(v => v.split('='))
+        .reduce((acc, v) => {
+            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+            return acc;
+        }, {})
+}
 
 // ---------------------------------------
 // Initialize context
@@ -10,17 +19,16 @@ let url = new URL(document.URL);
 // ---------------------------------------
 // Auth
 // ---------------------------------------
-// console.log(ctx.cookies)
-// console.log(ctx.cookies.D_NEW_SESSION)
-// if (ctx.cookies.D_NEW_SESSION) {
+let cookies = parseCookies(document.cookie);
+if (cookies.D_NEW_SESSION) {
 
-//     // parse the user object from the cookie & add each attribute into local storage
-//     let user: User = JSON.parse(ctx.cookies['D_NEW_SESSION']) as User;
-//     Object.keys(user).forEach((key) => {
-//         localStorage.setItem(key, (user as any)[key]);
-//     });
-//     // document.cookie = "D_NEW_SESSION=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-// } 
+    // parse the user object from the cookie & add each attribute into local storage
+    let user = JSON.parse(cookies.D_NEW_SESSION);
+    Object.keys(user).forEach((key) => {
+        localStorage.setItem(key, user[key]);
+    });
+    // document.cookie = "D_NEW_SESSION=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+} 
 
 // ---------------------------------------
 // Show the FRE
@@ -42,23 +50,28 @@ let url = new URL(document.URL);
 // ---------------------------------------
 // Hydrate summary Cards
 // ---------------------------------------
-
+// ---------------------------------------
+// Set page event handlers
+// ---------------------------------------
+document.getElementById("signout_action").addEventListener("click", async (e) => {
+    localStorage.clear();
+    window.location.href = "/signout";
+})
 
 // ---------------------------------------
 // Setup Google sign-in
 // ---------------------------------------
-if (!localStorage.getItem('D_USER_SLUG')) {
+if (!localStorage.getItem('slug')) {
 
-    let showLoginControls = true
     let loginControlsContainer = document.getElementById("loginControls");
-    if (loginControlsContainer && showLoginControls) {
+    if (loginControlsContainer) {
 
         google.accounts.id.initialize({
             client_id: "326093643211-dh58srqtltvqfakqta4us0il2vgnkenr.apps.googleusercontent.com",
             login_uri: `${url.origin}/api/signin/google?redirectTo=${encodeURIComponent(url.pathname)}`,
             context: "signin",
             ux_mode: "redirect",
-            prompt_parent_id: 'loginControls',
+            // prompt_parent_id: 'loginControls',
             auto_select: false,
         });
         google.accounts.id.renderButton(

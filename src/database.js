@@ -45,17 +45,36 @@ export const fetchSpecificPostById = async (ctx) => {
     return result.rows
 }
 
-export const getUserDetails = async (ctx) => {
+export const getUserDetails = async (ctx, email) => {
     let conn = connectToPlanetScale(ctx)
     let query = 'select * from users where google_id=:email or apple_id=:email limit 1'
-    let result = await conn.execute(query, {email : ctx.user.email})
+    let result = await conn.execute(query, {email : email})
     return result.rows
 }
 
-export const addGoogleUser = async (ctx) => {
+export const addGoogleUser = async (ctx, user) => {
     let conn = connectToPlanetScale(ctx)
-    let query = `INSERT IGNORE INTO users (slug, name, thumb, honorific, flair, role, level, google_id) 
-        VALUES (:slug, :name, :thumb, :honorific, :flair, :role, :level, :google_id)`
-    let result = await conn.execute(query, {slug : ctx.user.slug, name : ctx.user.name, thumb : ctx.user.thumb, honorific : ctx.user.honorific, flair : ctx.user.flair, role : ctx.user.role, level : ctx.user.level, google_id : ctx.user.google_id})
+    let result = await conn.execute(`
+        insert into users 
+        (id, slug, name, thumb, honorific, flair, role, level, stars, creds, gil, google_id) 
+        values 
+        (?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [user.id, user.slug, user.name, user.thumb, user.honorific, user.flair, user.role, user.level, user.stars, user.creds, user.gil, user.google_id]
+        )
+    console.log("User to be added: ", user)
+    console.log("Result of ad user to db: ", result)
+    return result
+}
+
+export const addNewSession = async (ctx, sessionId, userId, userAgent) => {
+    let conn = connectToPlanetScale(ctx)
+
+    let result = await conn.execute(`
+        insert into sessions 
+        (id, user_id, user_agent) 
+        values 
+        (?, ?, ?)`,
+        [sessionId, userId, userAgent]
+        )
     return result
 }

@@ -1,5 +1,6 @@
 import { drawer } from "../views/drawer"
 import { header } from "../views/header"
+import { themeModal } from "../views/themeModal"
 
 export const generateHTML = (ctx) => {
     ctx.res.content =     /*html*/`
@@ -18,10 +19,10 @@ export const generateHTML = (ctx) => {
             <meta property="og:type" content="article">
             <meta property="og:title" content="${ctx.page.title}">
 
-            <script src="https://accounts.google.com/gsi/client" async></script>
 
             <link href="/pub/styles.css" rel="stylesheet" type="text/css">
-            <script src="/pub/main.js" type="module" ></script>
+            <script src="https://accounts.google.com/gsi/client" defer></script>
+            <script src="/pub/main.js" type="module" defer></script>
 
         </head>
 
@@ -88,6 +89,9 @@ export const generateHTML = (ctx) => {
                     </aside>
                                         
                 </div>
+            </div>
+            <div id = "modals_container">
+                ${themeModal()}
             </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
         

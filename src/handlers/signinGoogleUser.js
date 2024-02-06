@@ -1,10 +1,11 @@
 import {jwtVerify, createRemoteJWKSet} from 'jose'
-// import { nanoid } from 'nanoid'
-import { checkIfUserBlocked } from '../database'
+import { nanoid } from 'nanoid'
+import { checkIfUserBlocked, getUserDetails, addGoogleUser, addNewSession } from '../database'
 
 
 // TODO - handle all errors in the UI. This is a post req.
 export const signinGoogleUser = async (ctx) => {
+    ctx.res.errRedirect = true
 
     let formData = await ctx.req.raw.formData()
 
@@ -42,10 +43,9 @@ export const signinGoogleUser = async (ctx) => {
     // Check if user is blocked
     // ------------------------------------------
     let resUserBlocked = await checkIfUserBlocked(ctx, payload.email)
-    console.log(`User Blocked: ${resUserBlocked}`)
     if (resUserBlocked.length != 0) {
         throw new Error("503", { cause: `This user id is blocked. 
-        You can no longer create an accont on Digglu` })
+        You can no longer create an account on Digglu` })
     }
 
     console.log(`User has been verified as "${payload.email}"`)
@@ -53,47 +53,47 @@ export const signinGoogleUser = async (ctx) => {
     // // ------------------------------------------
     // // Get user details from DB. Else add to db
     // // ------------------------------------------
-    // let user: User = {} as User
-    // let isNewUser = false
-    // let resUserExists =  getGoogleUserFromDB(ctx, payload.email as string)
+    let user = {}
+    let resUserExists = await getUserDetails(ctx, payload.email)
 
-    // if (resUserExists.size != 0) {
-    //     // console.log(`user exists`, JSON.stringify(user))
-    //     user = resUserExists.rows[0] as User
-    //     console.log(`user exists`, JSON.stringify(user))
-    // } else {
-    //     // console.log(`user doesn't exist`)
-    //     isNewUser = true
+    if (resUserExists.length == 0) {
 
-    //     // create new user with default values
-    //     user.id             = nanoid(16)
-    //     user.slug           = nanoid()
-    //     user.name           = payload.name as string
-    //     user.thumb          = `https://robohash.org/${user.slug}?set=set3`
-    //     user.honorific      = "Mx"
-    //     user.flair          = "Nony is not a Mouse"
-    //     user.role           = "user"
-    //     user.level          = "wood"
-    //     user.stars          = 0
-    //     user.creds          = 0
-    //     user.gil            = 0
-    //     user.google_id      = payload.email as string
+        console.log(`user doesn't exist`)
+
+        // create new user with default values
+        user.id             = nanoid(32)
+        user.slug           = nanoid(32)
+        user.name           = payload.name
+        user.thumb          = `https://robohash.org/${user.slug}?set=set3`
+        user.honorific      = "Mx"
+        user.flair          = "Nony is not a Mouse"
+        user.role           = "user"
+        user.level          = "wood"
+        user.stars          = 0
+        user.creds          = 0
+        user.gil            = 0
+        user.google_id      = payload.email
         
-    //     let resAddUser =  addGoogleUserToDB(ctx, user)
-    //     if (resAddUser.rowsAffected != 1) {
-    //         throw new Error("503", { cause: "Unable to add user to DB" })
-    //     }
-    //     // Trigger FRE for user
-    //     ctx.res.headers.append('Set-Cookie', `D_FRE=true; path=/; SameSite=Strict;`)
+        let resAddUser = await addGoogleUser(ctx, user)
+        console.log("adding user to db:", resAddUser)
+        if (resAddUser.rowsAffected != 1) {
+            throw new Error("503", { cause: "Unable to add user to DB" })
+        }
+        
+        // Trigger FRE for user
+        ctx.res.headers.append('Set-Cookie', `D_FRE=true; path=/; SameSite=Strict;`)
 
-    // }
+    } else {
+        console.log(`user exists`)
+        user = resUserExists[0]
+    }
 
-    // // Remove id and google_id from the user object
-    // user.id = ""
-    // user.google_id = ""
+    // Remove id and google_id from the user object
+    delete user.id
+    delete user.google_id
 
-    // // uri encode the url parts of the User object
-    // user.thumb         = encodeURIComponent(user.thumb)
+    // uri encode the url parts of the User object
+    user.thumb         = encodeURIComponent(user.thumb)
 
     // // ------------------------------------------
     // // TODO - Tell the user about the punishment status, if any
@@ -111,24 +111,25 @@ export const signinGoogleUser = async (ctx) => {
     // // ------------------------------------------
     // // create session id. set session in db. set session cookie
     // // ------------------------------------------
-    // let sessionId = nanoid(36)
-    // let _ =  addNewSession(ctx, sessionId, user.id, ctx.req.raw.headers.get('User-Agent') || "")
+    let sessionId = nanoid(32)
+    let userEncoded = encodeURIComponent(JSON.stringify(user))
+    let _ =  addNewSession(ctx, sessionId, user.id, ctx.req.raw.headers.get('User-Agent') || "")
 
-    // console.log("New User Session :", user)
+    console.log("New User Session :", user)
 
-    // ctx.res.headers.append('Set-Cookie', `D_UID=${sessionId}; path=/; HttpOnly; Secure; SameSite=Strict;`)
+    ctx.res.headers.append('Set-Cookie', `D_SID=${sessionId}; path=/; HttpOnly; Secure; SameSite=Strict;`)
 
-    // // send the user object in the cookie
-    // ctx.res.headers.append('Set-Cookie', `D_NEW_SESSION=${JSON.stringify(user)}; path=/; SameSite=Strict;`)
+    // send the user object in the cookie
+    ctx.res.headers.append('Set-Cookie', `D_NEW_SESSION=${userEncoded}; path=/; SameSite=Strict;`)
 
     // // ------------------------------------------
     // // Redirect to the original page
     // // ------------------------------------------
-    // // get the query param for redirectTo
-    // let redirectTo = ctx.req.url.origin + ctx.req.url.searchParams.get('redirectTo') || ctx.req.url.origin + '/'
-    // console.log(`redirectTo: ${redirectTo}`)
+    // get the query param for redirectTo
+    let redirectTo = ctx.req.url.origin + ctx.req.url.searchParams.get('redirectTo') || ctx.req.url.origin + '/'
+    console.log(`redirectTo: ${redirectTo}`)
 
-    // // set window location
-    // ctx.res.status = 302
-    // ctx.res.headers.append('Location', redirectTo)
+    // set window location
+    ctx.res.status = 302
+    ctx.res.headers.append('Location', redirectTo)
 }

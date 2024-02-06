@@ -21,13 +21,13 @@ export const PostCategories  = {
 }
 
 export const CommunityLinks = {
-	"faqs": "FAQs",
-	"rules": "Guidelines",
-	"cont": "Contact Us",
+	faqs: "FAQs",
+	rules: "Guidelines",
+	cont: "Contact Us",
 }
 
 export const LegalLinks = {
-	"terms": "Terms of Use",
-	"priv": "Privacy Policy",
-	"cook": "Cookie Policy",
+	terms: "Terms of Use",
+	priv: "Privacy Policy",
+	cook: "Cookie Policy",
 }
