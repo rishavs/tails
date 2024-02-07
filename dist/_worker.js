@@ -1947,10 +1947,12 @@ var parseCookies = (str) => {
 };
 
 // src/handlers/signout.js
-var signout = async (store) => {
-  store.resp.content = "Logging Out...";
-  store.resp.status = 302;
-  store.resp.headers.append("Location", `${store.env.HOST}`);
+var signout = async (ctx) => {
+  ctx.res.headers.append("Set-Cookie", `D_SID=""; HttpOnly; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  ctx.res.headers.append("Set-Cookie", `D_FRE=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  ctx.res.headers.append("Set-Cookie", `D_NEW_SESSION=""; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT;`);
+  ctx.res.status = 302;
+  ctx.res.headers.append("Location", `${ctx.env.HOST}`);
 };
 
 // src/server.js
