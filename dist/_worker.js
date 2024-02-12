@@ -17793,17 +17793,6 @@ var require_build = __commonJS({
   }
 });
 
-// src/handlers/setHeaders.js
-var setHeaders = (ctx) => {
-  if (ctx.req.url.pathname.startsWith("/api")) {
-    ctx.res.headers.append("content-type", "application/json;charset=UTF-8");
-    ctx.res.headers.append("Powered-by", "API: Pika Pika Pika Choooo");
-  } else {
-    ctx.res.headers.append("Powered-by", "VIEW: Pika Pika Pika Choooo");
-    ctx.res.headers.append("Content-Type", "text/html; charset=UTF-8");
-  }
-};
-
 // src/utils.js
 var parseCookies = (str) => {
   return str.split(";").map((v) => v.split("=")).reduce((acc, v) => {
@@ -18289,21 +18278,17 @@ var errors = {
   }
 };
 var buildErrorPage = (ctx, e) => {
-  let errCodeFromParams = ctx.req.params.get("code");
-  let errMsgFromParams = ctx.req.params.get("msg");
-  if (errCodeFromParams && !["400", "401", "404", "503"].includes(errCodeFromParams)) {
-    errCodeFromParams = "500";
-  }
-  let errorCode = parseInt(errCodeFromParams) || 500;
-  let errorMsg = errMsgFromParams || e.cause || errors[errorCode].msg;
-  let haiku = errors[errCodeFromParams] && errors[errCodeFromParams].haikus ? errors[errCodeFromParams].haikus[Math.floor(Math.random() * errors[errCodeFromParams].haikus.length)] : "";
-  console.log(`Error: ${errCodeFromParams} - ${errorMsg}`);
+  console.log("Building Error Page", e);
+  let errorCode = ctx.req.params.get("code") || e.msg || "500";
+  let errorMsg = ctx.req.params.get("msg") || e.cause || errors[errorCode].msg;
+  let haiku = errors[errorCode] && errors[errorCode].haikus ? errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : "";
+  console.log(`Error: ${errorCode} - ${errorMsg}`);
   ctx.page.title = "ERROR Page";
   ctx.page.descr = "This is the error page";
   ctx.page.html = /*html*/
   `
         <article class="prose lg:prose-lg text-center pt-16">
-            <h1>Error ${errCodeFromParams} :( </h1>
+            <h1>Error ${errorCode} :( </h1>
             <h3> ${errorMsg} </h3>
             <small> <i>
                 ${haiku}
@@ -20154,24 +20139,27 @@ var buildPostDetailsPage = async (ctx) => {
   (data) => console.log(data)
 );
 var routes = {
-  "GET/api/hello": [setHeaders, sayHello],
-  "POST/api/signin/google": [setHeaders, signinGoogleUser],
-  "GET/": [setHeaders, buildAboutPage, generateHTML],
-  "GET/search": [setHeaders, buildAboutPage, generateHTML],
-  "GET/p/new": [setHeaders, getUserInfo, buildNewPostPage, generateHTML],
-  "GET/u/me": [setHeaders, buildAboutPage, generateHTML],
-  "POST/p/new": [setHeaders, getUserInfo, validateNewPost, getLinkData, saveNewPost],
-  "GET/error": [setHeaders, buildErrorPage, generateHTML],
-  "GET/signout": [setHeaders, signout],
-  "GET/:cat": [setHeaders, buildAboutPage, generateHTML],
-  "GET/p/:slug": [setHeaders, buildPostDetailsPage, generateHTML],
-  "GET/u/:slug": [setHeaders, buildAboutPage, generateHTML],
-  "GET/c/:slug": [setHeaders, buildAboutPage, generateHTML]
+  "GET/api/hello": [sayHello],
+  "POST/api/signin/google": [signinGoogleUser],
+  "GET/": [buildAboutPage, generateHTML],
+  "GET/search": [buildAboutPage, generateHTML],
+  "GET/p/new": [getUserInfo, buildNewPostPage, generateHTML],
+  "GET/u/me": [buildAboutPage, generateHTML],
+  "POST/p/new": [getUserInfo, validateNewPost, getLinkData, saveNewPost],
+  "GET/error": [buildErrorPage, generateHTML],
+  "GET/signout": [signout],
+  "GET/:cat": [buildAboutPage, generateHTML],
+  "GET/p/:slug": [buildPostDetailsPage, generateHTML],
+  "GET/u/:slug": [buildAboutPage, generateHTML],
+  "GET/c/:slug": [buildAboutPage, generateHTML]
 };
 var server_default = {
   async fetch(request, env) {
     let url = new URL(request.url);
     let params = new URLSearchParams(url.search);
+    if (url.pathname.startsWith("/pub")) {
+      return env.ASSETS.fetch(request);
+    }
     let ctx = {
       req: {
         raw: request,
@@ -20200,8 +20188,12 @@ var server_default = {
       ctx.res.status = 200;
       return new Response(null, { status: ctx.res.status, headers: ctx.res.headers });
     }
-    if (url.pathname.startsWith("/pub")) {
-      return env.ASSETS.fetch(request);
+    if (ctx.req.url.pathname.startsWith("/api")) {
+      ctx.res.headers.append("content-type", "application/json;charset=UTF-8");
+      ctx.res.headers.append("Powered-by", "API: Pika Pika Pika Choooo");
+    } else {
+      ctx.res.headers.append("Powered-by", "VIEW: Pika Pika Pika Choooo");
+      ctx.res.headers.append("Content-Type", "text/html; charset=UTF-8");
     }
     try {
       let route = request.method + url.pathname;
@@ -20243,8 +20235,7 @@ var server_default = {
         });
         return Response.redirect(`${url.origin}/error?${params2.toString()}`, 302);
       }
-      if (!url.pathname.startsWith("/api")) {
-        setHeaders(ctx);
+      if (!ctx.req.path.startsWith("/api")) {
         buildErrorPage(ctx, e);
         generateHTML(ctx);
       }

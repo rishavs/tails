@@ -42,26 +42,21 @@ let errors =  {
 }
 
 export const buildErrorPage = (ctx, e) => {
-    let errCodeFromParams = ctx.req.params.get("code")
-    let errMsgFromParams = ctx.req.params.get("msg")
+    console.log("Building Error Page", e)
 
-    if (errCodeFromParams && !["400", "401", "404", "503"].includes(errCodeFromParams)) {
-        errCodeFromParams = "500"
-    }
+    let errorCode = ctx.req.params.get("code") || e.msg ||'500'
+    let errorMsg = ctx.req.params.get("msg") || e.cause || errors[errorCode].msg
 
-    let errorCode = parseInt(errCodeFromParams) || 500
-    let errorMsg = errMsgFromParams || e.cause || errors[errorCode].msg
-
-    let haiku = errors[errCodeFromParams] && errors[errCodeFromParams].haikus ?
-        errors[errCodeFromParams].haikus[Math.floor(Math.random() * errors[errCodeFromParams].haikus.length)] : '';
+    let haiku = errors[errorCode] && errors[errorCode].haikus ?
+        errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : '';
     
-    console.log(`Error: ${errCodeFromParams} - ${errorMsg}`)
+    console.log(`Error: ${errorCode} - ${errorMsg}`)
     
     ctx.page.title = "ERROR Page"
     ctx.page.descr = "This is the error page"
     ctx.page.html = /*html*/`
         <article class="prose lg:prose-lg text-center pt-16">
-            <h1>Error ${errCodeFromParams} :( </h1>
+            <h1>Error ${errorCode} :( </h1>
             <h3> ${ errorMsg} </h3>
             <small> <i>
                 ${haiku}

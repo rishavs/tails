@@ -23,30 +23,36 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
 );
 
 let routes = {
-    "GET/api/hello"         : [setHeaders, sayHello],
-    "POST/api/signin/google": [setHeaders, signinGoogleUser],
+    "GET/api/hello"         : [sayHello],
+    "POST/api/signin/google": [signinGoogleUser],
 
-    "GET/"             : [setHeaders, buildAboutPage, generateHTML],
-    "GET/search"       : [setHeaders, buildAboutPage, generateHTML],
-    "GET/p/new"        : [setHeaders, getUserInfo, buildNewPostPage, generateHTML],
-    "GET/u/me"         : [setHeaders, buildAboutPage, generateHTML],
+    "GET/"             : [buildAboutPage, generateHTML],
+    "GET/search"       : [buildAboutPage, generateHTML],
+    "GET/p/new"        : [getUserInfo, buildNewPostPage, generateHTML],
+    "GET/u/me"         : [buildAboutPage, generateHTML],
 
-    "POST/p/new" : [setHeaders, getUserInfo, validateNewPost, getLinkData, saveNewPost],
+    "POST/p/new" : [getUserInfo, validateNewPost, getLinkData, saveNewPost],
 
-    "GET/error"             : [setHeaders, buildErrorPage, generateHTML],
-    "GET/signout"           : [setHeaders, signout],
+    "GET/error"             : [buildErrorPage, generateHTML],
+    "GET/signout"           : [signout],
 
-    "GET/:cat"         : [setHeaders, buildAboutPage, generateHTML],
-    "GET/p/:slug"      : [setHeaders, buildPostDetailsPage, generateHTML],
-    "GET/u/:slug"      : [setHeaders, buildAboutPage, generateHTML],
-    "GET/c/:slug"      : [setHeaders, buildAboutPage, generateHTML],
+    "GET/:cat"         : [buildAboutPage, generateHTML],
+    "GET/p/:slug"      : [buildPostDetailsPage, generateHTML],
+    "GET/u/:slug"      : [buildAboutPage, generateHTML],
+    "GET/c/:slug"      : [buildAboutPage, generateHTML],
 }
 
 export default {
     async fetch(request, env) {
-
         let url = new URL(request.url);
         let params = new URLSearchParams(url.search);
+
+        // ------------------------------------------
+        // Handle static assets
+        // ------------------------------------------
+        if (url.pathname.startsWith("/pub")) {
+            return env.ASSETS.fetch(request);
+        }
 
 		// ------------------------------------------
         // Create Context Store
@@ -127,13 +133,21 @@ export default {
             ctx.res.status = 200
             return new Response(null, { status: ctx.res.status, headers: ctx.res.headers})
         }
+
+        // ------------------------------------------
+        // Set Content Type
+        // ------------------------------------------
+        if (ctx.req.url.pathname.startsWith("/api")) {
+            ctx.res.headers.append('content-type', 'application/json;charset=UTF-8')
+            ctx.res.headers.append('Powered-by', 'API: Pika Pika Pika Choooo')
+        } else {
+            ctx.res.headers.append('Powered-by', 'VIEW: Pika Pika Pika Choooo')
+            ctx.res.headers.append('Content-Type', 'text/html; charset=UTF-8')
+        }
+
         // ------------------------------------------
         // Handle Requests
         // ------------------------------------------
-        if (url.pathname.startsWith("/pub")) {
-            return env.ASSETS.fetch(request);
-        }
-
         try {
             let route = request.method + url.pathname
             if (route in routes){
@@ -186,9 +200,8 @@ export default {
                 return Response.redirect(`${url.origin}/error?${params.toString()}`, 302)
             }
 
-            if (!url.pathname.startsWith("/api")) {
+            if (!ctx.req.path.startsWith("/api")) {
                 // Render Error page
-                setHeaders(ctx)
                 buildErrorPage(ctx, e)
                 generateHTML(ctx)
             }
