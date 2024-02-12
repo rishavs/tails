@@ -1,20 +1,23 @@
-import { getUserDetails } from '../database'
+import { getUserFromSession } from '../database'
 
 
 // This function takes in a sessionId and returns the user info
 // the user info gets added to the context
 // Also add cookies for warnings and stuff
 export const getUserInfo = async (ctx) => {
-    // if db has user details, add to ctx
-    // else return ctx without user info
 
-    // let resGetUser = await getUserDetails(ctx, email)
-    // console.log(`User Details: ${resGetUser}`)
-    // if (resGetUser.length == 0) {
-    //     throw new Error("503", { cause: `user not found` })
-    // }
+    let sessionId = ctx.req.cookies.D_SID
+    if (!sessionId) {
+        throw new Error("401", { cause: "No session id present in the cookie" })
+    }
+    console.log("Session ID: ", sessionId)
+    
+    let resUserDetails = await getUserFromSession(ctx, sessionId)
+    if (resUserDetails.length == 0) {
+        throw new Error("401", { cause: "No user found for this session id" })
+    }
 
-    // ctx.user = resGetUser[0]
+    ctx.user = resUserDetails[0]
 
     // ------------------------------------------
     // TODO - Tell the user about the punishment status, if any

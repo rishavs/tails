@@ -1,15 +1,9 @@
+import { NewPostSchema } from "./defs";
+import { parseCookies } from "./utils";
+
 // ---------------------------------------
 // Utilities
 // ---------------------------------------
-const parseCookies = (str) => {
-    return str
-        .split(';')
-        .map(v => v.split('='))
-        .reduce((acc, v) => {
-            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-            return acc;
-        }, {})
-}
 
 // ---------------------------------------
 // Initialize context
@@ -53,10 +47,37 @@ if (cookies.D_NEW_SESSION) {
 // ---------------------------------------
 // Set page event handlers
 // ---------------------------------------
-document.getElementById("signout_action").addEventListener("click", async (e) => {
+document.getElementById("signout_action")?.addEventListener("click", async (e) => {
     localStorage.clear();
     window.location.href = "/signout";
 })
+document.getElementById("post_type")?.addEventListener("click", async(e) => {
+    if (post_type.checked) {
+
+        post_link_controls.classList.remove("hidden")
+        post_link_input.required = true
+    } else {
+
+        post_link_controls.classList.add("hidden")
+        post_link_input.required = false
+    }
+
+})
+document.getElementById("post_link_input")?.addEventListener("input", async(e) => {
+    let numOfEnteredChars = post_link_input.value.length;
+    post_link_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.linkMaxLength} chars`;
+})
+
+document.getElementById("post_title_input")?.addEventListener("input", async(e) => {
+    let numOfEnteredChars = post_title_input.value.length;
+    post_title_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.titleMaxLength} chars`;
+})
+
+document.getElementById("post_descr_textarea")?.addEventListener("input", async(e) => {
+    let numOfEnteredChars = post_descr_textarea.value.length;
+    descr_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.contentMaxLength} chars`;
+})
+
 
 // ---------------------------------------
 // Setup Google sign-in

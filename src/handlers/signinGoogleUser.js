@@ -88,13 +88,6 @@ export const signinGoogleUser = async (ctx) => {
         user = resUserExists[0]
     }
 
-    // Remove id and google_id from the user object
-    delete user.id
-    delete user.google_id
-
-    // uri encode the url parts of the User object
-    user.thumb         = encodeURIComponent(user.thumb)
-
     // // ------------------------------------------
     // // TODO - Tell the user about the punishment status, if any
     // // ------------------------------------------
@@ -112,14 +105,25 @@ export const signinGoogleUser = async (ctx) => {
     // // create session id. set session in db. set session cookie
     // // ------------------------------------------
     let sessionId = nanoid(32)
-    let userEncoded = encodeURIComponent(JSON.stringify(user))
-    let _ =  addNewSession(ctx, sessionId, user.id, ctx.req.raw.headers.get('User-Agent') || "")
+    let resAddNewSession = await addNewSession(ctx, sessionId, user.id, ctx.req.raw.headers.get('User-Agent') || "")
+    if (resAddNewSession.rowsAffected != 1) {
+        throw new Error("503", { cause: "Unable to add session to DB" })
+    }
 
     console.log("New User Session :", user)
 
     ctx.res.headers.append('Set-Cookie', `D_SID=${sessionId}; path=/; HttpOnly; Secure; SameSite=Strict;`)
 
+    
+    // Remove id and google_id from the user object
+    delete user.id
+    delete user.google_id
+
+    // uri encode the url parts of the User object
+    user.thumb         = encodeURIComponent(user.thumb)
+
     // send the user object in the cookie
+    let userEncoded = encodeURIComponent(JSON.stringify(user))
     ctx.res.headers.append('Set-Cookie', `D_NEW_SESSION=${userEncoded}; path=/; SameSite=Strict;`)
 
     // // ------------------------------------------

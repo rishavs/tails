@@ -25,6 +25,15 @@ export const checkIfUserBlocked = async (ctx, id) => {
     console.log(`Blocked`, result)
     return result.rows
 }
+export const checkIfDomainBlocked = async (ctx, origin) => {
+    let conn = connectToPlanetScale(ctx)
+    let result =  await conn.execute(
+        'select * from blocked_domains where domain = :origin', 
+        {origin : origin}
+    )
+    console.log(`The domain ${origin} is Blocked!`, result)
+    return result.rows
+}
 
 export const fetchAllPosts = async (ctx) => {
     let conn = connectToPlanetScale(ctx)
@@ -32,10 +41,10 @@ export const fetchAllPosts = async (ctx) => {
     return result.rows
 }
 
-export const fetchSpecificPostById = async (ctx) => {
+export const fetchSpecificPostBySlug = async (ctx) => {
     let conn = connectToPlanetScale(ctx)
 
-    let result = await conn.execute('select * from posts where id=:id', {id : ctx.page.id})
+    let result = await conn.execute('select * from posts where slug=:slug', {slug : ctx.page.slug})
     if (result.rows.length == 0) {
         let err = new Error()
         err.message = "404"
@@ -75,6 +84,27 @@ export const addNewSession = async (ctx, sessionId, userId, userAgent) => {
         values 
         (?, ?, ?)`,
         [sessionId, userId, userAgent]
+        )
+    return result
+}
+
+export const getUserFromSession = async (ctx, sessionId) => {
+    let conn = connectToPlanetScale(ctx)
+    let query = `SELECT * FROM users WHERE id = (
+        SELECT user_id FROM sessions WHERE id = :sessionId)
+        limit 1`
+    let result = await conn.execute(query, {sessionId : sessionId})
+    return result.rows
+}
+
+export const saveNewPostInDB = async (ctx) => {
+    let conn = connectToPlanetScale(ctx)
+    let result = await conn.execute(`
+        insert into posts 
+        (id, slug, category, type, link, title, content, anonymous, author_id, page_image, page_image_alt, favicon, og_title, og_desc, og_image, og_image_alt, og_type, og_url) 
+        values 
+        (?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [ctx.post.id, ctx.post.slug, ctx.post.category, ctx.post.type, ctx.post.link, ctx.post.title, ctx.post.content, ctx.post.anonymous, ctx.post.authorId, ctx.post.pageImage, ctx.post.pageImageAlt, ctx.post.favicon, ctx.post.ogTitle, ctx.post.ogDesc, ctx.post.ogImage, ctx.post.ogImageAlt, ctx.post.ogType, ctx.post.ogUrl]
         )
     return result
 }

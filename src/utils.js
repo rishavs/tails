@@ -7,3 +7,16 @@ export const parseCookies = (str) => {
             return acc;
         }, {})
 }
+
+const TIMEOUT = 5000; // Set timeout to 5 seconds
+export const fetchURL = (url, options) => {
+    return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) =>
+            setTimeout(
+                () => reject(new Error(503, {cause:'Request timed out'})), 
+                TIMEOUT
+            )
+        )
+    ]);
+};

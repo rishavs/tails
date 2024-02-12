@@ -10,21 +10,34 @@ import { getUserInfo } from "./handlers/getUserInfo";
 
 import { parseCookies } from "./utils";
 import { signout } from "./handlers/signout";
+import { buildNewPostPage } from "./handlers/buildNewPostPage";
+import { getLinkPreview, getPreviewFromContent } from "link-preview-js";
+import { validateNewPost } from "./handlers/validateNewPost";
+import { saveNewPost } from "./handlers/saveNewPost";
+import { getLinkData } from "./handlers/getLinkData";
+import { buildPostDetailsPage } from "./handlers/buildPostDetailsPage";
+
+// pass the link directly
+getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
+  console.log(data)
+);
 
 let routes = {
-    "GET/api/hello"          : [setHeaders, sayHello],
-    "POST/api/signin/google" : [setHeaders, signinGoogleUser],
+    "GET/api/hello"         : [setHeaders, sayHello],
+    "POST/api/signin/google": [setHeaders, signinGoogleUser],
 
     "GET/"             : [setHeaders, buildAboutPage, generateHTML],
     "GET/search"       : [setHeaders, buildAboutPage, generateHTML],
-    "GET/p/new"        : [setHeaders, buildAboutPage, generateHTML],
+    "GET/p/new"        : [setHeaders, getUserInfo, buildNewPostPage, generateHTML],
     "GET/u/me"         : [setHeaders, buildAboutPage, generateHTML],
 
-    "GET/error"  : [setHeaders, buildErrorPage, generateHTML],
-    "GET/signout"  : [setHeaders, signout],
+    "POST/p/new" : [setHeaders, getUserInfo, validateNewPost, getLinkData, saveNewPost],
+
+    "GET/error"             : [setHeaders, buildErrorPage, generateHTML],
+    "GET/signout"           : [setHeaders, signout],
 
     "GET/:cat"         : [setHeaders, buildAboutPage, generateHTML],
-    "GET/p/:slug"      : [setHeaders, buildAboutPage, generateHTML],
+    "GET/p/:slug"      : [setHeaders, buildPostDetailsPage, generateHTML],
     "GET/u/:slug"      : [setHeaders, buildAboutPage, generateHTML],
     "GET/c/:slug"      : [setHeaders, buildAboutPage, generateHTML],
 }
@@ -47,6 +60,7 @@ export default {
                 params: params,
 			},
 			env: env,
+            post : null,
             page: {
                 title: "",
                 descr: "",
@@ -102,13 +116,20 @@ export default {
         // ctx.res.headers.append('Content-Security-Policy', 'upgrade-insecure-requests')
 
         // ------------------------------------------
-        // Handle Requests
+        // Handle HEAD method - TODO
+        // ------------------------------------------
+        // This is for faster liveness checks
+
+        // ------------------------------------------
+        // Handle Options - TODO - expand
         // ------------------------------------------
         if (request.method == "OPTIONS") {
             ctx.res.status = 200
-            return new Response(ctx.res.content, { status: ctx.res.status, headers: ctx.res.headers})
+            return new Response(null, { status: ctx.res.status, headers: ctx.res.headers})
         }
-
+        // ------------------------------------------
+        // Handle Requests
+        // ------------------------------------------
         if (url.pathname.startsWith("/pub")) {
             return env.ASSETS.fetch(request);
         }
@@ -123,9 +144,11 @@ export default {
                 // Dynamic routes
                 let urlFrag = ctx.req.path.split('/')
                 if (urlFrag[1] && Object.keys(PostCategories).includes(urlFrag[1])) {
-                        urlFrag[1] = ":cat"
+                    ctx.page.category = urlFrag[1]
+                    urlFrag[1] = ":cat"
                 }
                 if (urlFrag[2] ) {
+                    ctx.page.slug = urlFrag[2]
                     urlFrag[2] = ":slug"   
                 }
                 route = request.method + urlFrag.join('/')

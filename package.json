@@ -6,14 +6,16 @@
 		"dev": "run-p dev:*",
 		"dev:wrangler": "wrangler pages dev dist --live-reload --port 3000",
 		"dev:esbuild": "esbuild --bundle src/server.js --format=esm --watch --outfile=dist/_worker.js",
+		"dev:client": "esbuild --bundle src/client.js --format=esm --watch --outfile=dist/pub/app.js",
 		"style": "tailwindcss -i ./builder.css -o ./dist/pub/styles.css --watch",
 		"build": "esbuild --bundle src/server.js --format=esm --outfile=dist/_worker.js",
 		"deploy": "wrangler pages publish dist"
 	},
 	"dependencies": {
 		"@planetscale/database": "latest",
-		"nanoid": "latest",
-		"jose": "latest"
+		"jose": "latest",
+		"link-preview-js": "^3.0.5",
+		"nanoid": "latest"
 	},
 	"devDependencies": {
 		"@tailwindcss/forms": "latest",

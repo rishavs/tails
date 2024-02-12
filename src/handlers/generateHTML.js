@@ -22,7 +22,7 @@ export const generateHTML = (ctx) => {
 
             <link href="/pub/styles.css" rel="stylesheet" type="text/css">
             <script src="https://accounts.google.com/gsi/client" defer></script>
-            <script src="/pub/main.js" type="module" defer></script>
+            <script src="/pub/app.js" type="module" defer></script>
 
         </head>
 
