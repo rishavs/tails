@@ -1,4 +1,5 @@
 export const parseCookies = (str) => {
+    if (!str || str == "") return {};
     return str
         .split(';')
         .map(v => v.split('='))

@@ -1,6 +1,6 @@
 let errors =  {
     '401': {
-        msg: "You are not authorized to access this page",
+        cause: "You are not authorized to access this page",
         haikus: [
             `Unauthorized here, Access denied, I fear, Login, to come near.`,
             `Four zero one cries, Credentials, it denies, In secrecy, it lies.`,
@@ -10,7 +10,7 @@ let errors =  {
         ]
     },
     '404': {
-        msg: "Page Not Found",
+        cause: "Page Not Found",
         haikus: [
             `Page not found,<br> oh dear, The path is no longer clear,<br> Lost in the web's frontier.`,
             `Four zero four cries,<br> The sought page, a ghost, it lies,<br> In the web's vast skies.`,
@@ -20,7 +20,7 @@ let errors =  {
         ]
     },
     '500' : {
-        msg: "Internal Server Error",
+        cause: "Internal Server Error",
         haikus: [
             `Five hundred, a sigh, Server's internal outcry, A fix, we must apply.`,
             `Internal error screams, Shattering digital dreams, Not as easy as it seems.`,
@@ -30,7 +30,7 @@ let errors =  {
         ]
     },
     '503': {
-        msg: "Service Unavailable",
+        cause: "Service Unavailable",
         haikus: [
             `Five zero three, a pause, Service unavailable, cause, Time to debug laws.`,
             `Service, it retreats, Five zero three, it repeats, Until the issue depletes.`,
@@ -44,8 +44,8 @@ let errors =  {
 export const buildErrorPage = (ctx, e) => {
     console.log("Building Error Page", e)
 
-    let errorCode = ctx.req.params.get("code") || e.msg ||'500'
-    let errorMsg = ctx.req.params.get("msg") || e.cause || errors[errorCode].msg
+    let errorCode = ctx.req.params.get("code") || e.message ||'500'
+    let errorMsg = ctx.req.params.get("msg") || e.cause || errors['500'].cause
 
     let haiku = errors[errorCode] && errors[errorCode].haikus ?
         errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : '';

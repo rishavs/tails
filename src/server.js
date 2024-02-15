@@ -62,7 +62,7 @@ export default {
                 raw: request,
 				url: url,
                 path: url.pathname.toLowerCase(),
-                cookies: parseCookies(request.headers.get('cookie')),
+                cookies: parseCookies(request.headers.get('cookie') || ""),
                 params: params,
 			},
 			env: env,

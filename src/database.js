@@ -46,11 +46,15 @@ export const fetchSpecificPostBySlug = async (ctx) => {
 
     let result = await conn.execute('select * from posts where slug=:slug', {slug : ctx.page.slug})
     if (result.rows.length == 0) {
-        let err = new Error()
-        err.message = "404"
-        err.cause = "this id doesn't exists in the db"
-        throw err
+        throw new Error(404, {cause: "this post doesn't exists in the db"})
     }
+    return result.rows
+}
+
+export const fetchCommentsForPost = async (ctx, id) => {
+    let conn = connectToPlanetScale(ctx)
+    let result = await conn.execute(/*sql*/`
+        select id, post_id, parent_id, slug, type, content from posts where post_id=:id and parent_id is not null;`, {id : id})
     return result.rows
 }
 
@@ -101,10 +105,10 @@ export const saveNewPostInDB = async (ctx) => {
     let conn = connectToPlanetScale(ctx)
     let result = await conn.execute(`
         insert into posts 
-        (id, slug, category, type, link, title, content, anonymous, author_id, page_image, page_image_alt, favicon, og_title, og_desc, og_image, og_image_alt, og_type, og_url) 
+        (id, post_id, slug, category, type, link, title, content, anonymous, author_id, image, image_alt, favicon, og_title, og_desc, og_image, og_image_alt, og_type, og_url) 
         values 
-        (?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [ctx.post.id, ctx.post.slug, ctx.post.category, ctx.post.type, ctx.post.link, ctx.post.title, ctx.post.content, ctx.post.anonymous, ctx.post.authorId, ctx.post.pageImage, ctx.post.pageImageAlt, ctx.post.favicon, ctx.post.ogTitle, ctx.post.ogDesc, ctx.post.ogImage, ctx.post.ogImageAlt, ctx.post.ogType, ctx.post.ogUrl]
+        (?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [ctx.post.id, ctx.post.id, ctx.post.slug, ctx.post.category, ctx.post.type, ctx.post.link, ctx.post.title, ctx.post.content, ctx.post.anonymous, ctx.post.authorId, ctx.post.pageImage, ctx.post.pageImageAlt, ctx.post.favicon, ctx.post.ogTitle, ctx.post.ogDesc, ctx.post.ogImage, ctx.post.ogImageAlt, ctx.post.ogType, ctx.post.ogUrl]
         )
     return result
 }
