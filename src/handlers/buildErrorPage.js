@@ -44,7 +44,7 @@ let errors =  {
 export const buildErrorPage = (ctx, e) => {
     console.log("Building Error Page", e)
 
-    let errorCode = ctx.req.params.get("code") || e.message ||'500'
+    let errorCode = ctx.req.params.get("code") || errors[e.message] ? e.message : '500'
     let errorMsg = ctx.req.params.get("msg") || e.cause || errors['500'].cause
 
     let haiku = errors[errorCode] && errors[errorCode].haikus ?

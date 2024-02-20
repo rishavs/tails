@@ -5,7 +5,7 @@ import { themeModal } from "../views/themeModal"
 export const generateHTML = (ctx) => {
     ctx.res.content =     /*html*/`
     <!DOCTYPE html>
-    <html lang="en" data-theme="dracula">
+    <html lang="en" data-theme="winter">
 
         <head>
             <meta charset="UTF-8">

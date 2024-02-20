@@ -1,6 +1,6 @@
 export const postDetails = async (post) => {   
     return /*html*/`
-    <section name="article" class="flex flex-col gap-2 rounded-box border border-base-300 bg-base-100 p-4 shadow-xl">
+    <section name="article" class="flex flex-col gap-2 rounded-box border border-base-300 bg-base-100 p-4 lg:p-8 shadow-xl">
         <!-- Image Row -->
         <figure class="">
             <img src="https://picsum.photos/seed/picsum/500/300" class="w-full rounded-box object-cover" alt="Shoes" />
@@ -46,36 +46,35 @@ export const postDetails = async (post) => {
 
         <!-- The post header row -->
         <div class="divider m-0"></div>
-        <p class="self-top line-clamp-3 font-medium text-lg lg:text-2xl">
-            <span class="inline-flex items-center">
-                <img src="https://picsum.photos/seed/11/100/100" alt="" class="size-4 lg:size-6 rounded mx-1" />
-            </span>
-            <a href="" class="hover:underline">Garlic bread with cheese: What the science tells us. because scienece knows stuff about Garlics and Breads</a>
-        </p>
-
-        <a href="/" class="border-b border-t border-base-300 py-1 lg:py-3 min-h-16 lg:min-h-24 max-h-56">
-            <div class="avatar float-left">
-                <div class="w-20 rounded-btn h-auto lg:w-36 mr-2 lg:mr-4">
-                    <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-                </div>
-
-            </div>
-            <p class="px-2 font-medium leading-relaxed lg:text-lg hover:underline">Garlic bread with cheese: What the science tells us. because scienece knows stuff about Garlics and Breads. Garlic bread with cheese: What the science tells us. because scienece knows stuff about Garlics and Breads</p>
-        </a>
+        <div class="flex gap-2 lg:gap-4">
+            <button class="btn btn-warning size-24 float-left ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="5" stroke="currentColor" class="size-4 lg:size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
+                </svg>
+                <span class="lg:text-xl">999k</span>
+            </button>
+            
+            <p class="self-top line-clamp-3 font-medium lg:text-xl">
+                <span class="inline-flex items-center">
+                    <img src="https://picsum.photos/seed/11/100/100" alt="" class="size-4 lg:size-6 rounded mx-1" />
+                </span>
+                <a href="" class="hover:underline">Garlic bread with cheese: What the science tells us. because scienece knows stuff about Garlics and Breads</a>
+            </p>
+        </div>
 
         <!-- The summary row -->
         <div class="bg-base-300 rounded border-l-2 border-white p-2 lg:p-4 flex flex-col gap-2 lg:gap-4 my-2">
-        <p class="opacity-70 text-xs">From the page's descritpion in [google.com]</p> 
-        <p class="italic prose max-w-none">
-        For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.
-        But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country
-        </p>
+            <p class="opacity-70 text-xs">From the page's descritpion in [google.com]</p> 
+            <p class="italic prose max-w-none">
+            For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.
+            But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country
+            </p>
         </div>
 
         <!-- The post content row -->
         <article class="lg:prose-xl prose max-w-none">
-        <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
-        <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>
+            <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
+            <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>
         </article>
         <p class="text-xs italic opacity-70 pt-2 lg:pt-4 text-end pr-2">
             <span class="">Posted </span>·
