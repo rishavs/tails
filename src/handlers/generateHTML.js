@@ -5,7 +5,7 @@ import { themeModal } from "../views/themeModal"
 export const generateHTML = (ctx) => {
     ctx.res.content =     /*html*/`
     <!DOCTYPE html>
-    <html lang="en" data-theme="winter">
+    <html lang="en" data-theme="wintermoon">
 
         <head>
             <meta charset="UTF-8">
@@ -52,7 +52,7 @@ export const generateHTML = (ctx) => {
                     <div class="grow-0 w-full lg:min-w-[128] lg:w-[50rem] lg:pt-8 lg:px-4">
         
                     <!-- Header Content -->
-                        <header id="header_container" class="navbar sticky top-0 bg-base-100 opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10">
+                        <header id="header_container" class="navbar sticky top-0 bg-primary opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10">
                             ${header(ctx)}
                         </header>
 
@@ -94,8 +94,6 @@ export const generateHTML = (ctx) => {
                 ${themeModal()}
             </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
-        
-        
             <div id = "floaters_container"></div>
         </body>
     </html>

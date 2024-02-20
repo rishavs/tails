@@ -18031,7 +18031,7 @@ var header = (ctx) => {
         </button>
    
         <div id="loginControls" class="mx-1 flex items-center" >
-            <a href="/p/new" class="btn btn-square btn-error btn-outline mx-1">
+            <a href="/p/new" class="btn btn-square mx-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -18139,7 +18139,7 @@ var generateHTML = (ctx) => {
   ctx.res.content = /*html*/
   `
     <!DOCTYPE html>
-    <html lang="en" data-theme="winter">
+    <html lang="en" data-theme="wintermoon">
 
         <head>
             <meta charset="UTF-8">
@@ -18186,7 +18186,7 @@ var generateHTML = (ctx) => {
                     <div class="grow-0 w-full lg:min-w-[128] lg:w-[50rem] lg:pt-8 lg:px-4">
         
                     <!-- Header Content -->
-                        <header id="header_container" class="navbar sticky top-0 bg-base-100 opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10">
+                        <header id="header_container" class="navbar sticky top-0 bg-primary opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10">
                             ${header(ctx)}
                         </header>
 
@@ -18228,8 +18228,6 @@ var generateHTML = (ctx) => {
                 ${themeModal()}
             </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
-        
-        
             <div id = "floaters_container"></div>
         </body>
     </html>
@@ -19764,22 +19762,17 @@ var checkIfDomainBlocked = async (ctx, origin) => {
   console.log(`The domain ${origin} is Blocked!`, result);
   return result.rows;
 };
-var fetchSpecificPostBySlug = async (ctx) => {
-  let conn = connectToPlanetScale(ctx);
-  let result = await conn.execute("select * from posts where slug=:slug", { slug: ctx.page.slug });
-  if (result.rows.length == 0) {
-    throw new Error(404, { cause: "this post doesn't exists in the db" });
-  }
-  return result.rows;
-};
-var fetchCommentsForPost = async (ctx, id) => {
+var fetchCommentsTreeForPostSlug = async (ctx, slug) => {
   let conn = connectToPlanetScale(ctx);
   let result = await conn.execute(
     /*sql*/
     `
-        select id, post_id, parent_id, slug, type, content from posts where post_id=:id and parent_id is not null;`,
-    { id }
+        select id, post_id, parent_id, slug, type, content from posts where slug = :slug;`,
+    { slug }
   );
+  if (result.rows.length == 0) {
+    throw new Error(404, { cause: "this post doesn't exists in the db" });
+  }
   return result.rows;
 };
 var getUserDetails = async (ctx, email) => {
@@ -20193,7 +20186,7 @@ var postDetails = async (post) => {
         </div>
 
         <!-- The summary row -->
-        <div class="bg-base-300 rounded border-l-2 border-white p-2 lg:p-4 flex flex-col gap-2 lg:gap-4 my-2">
+        <div class="bg-base-300 rounded-btn border-l-2 border-neutral p-2 lg:p-4 flex flex-col gap-2 lg:gap-4 my-2">
             <p class="opacity-70 text-xs">From the page's descritpion in [google.com]</p> 
             <p class="italic prose max-w-none">
             For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.
@@ -20258,27 +20251,6 @@ var postDetails = async (post) => {
 };
 
 // src/views/comments.js
-var buildCommentsMap = (commentsList) => {
-  let commentsMap = {};
-  commentsList.forEach((comment) => {
-    comment.children = [];
-    comment.depth = 0;
-    comment.descendants = 0;
-    commentsMap[comment.id] = comment;
-  });
-  commentsList.forEach((comment) => {
-    if (comment.post_id != comment.parent_id) {
-      commentsMap[comment.parent_id].children.push(comment.id);
-      comment.depth = commentsMap[comment.parent_id].depth + 1;
-      let parent = commentsMap[comment.parent_id];
-      while (parent) {
-        parent.descendants++;
-        parent = commentsMap[parent.parent_id];
-      }
-    }
-  });
-  return commentsMap;
-};
 var generateCommentHTML = (commentsMaps, commentId) => {
   const comment = commentsMaps[commentId];
   let childrenHTML = comment.children.map((childId) => generateCommentHTML(commentsMaps, childId)).join("");
@@ -20405,8 +20377,7 @@ var generateCommentHTML = (commentsMaps, commentId) => {
     `
   );
 };
-var comments = (commentsList) => {
-  let commentsMap = buildCommentsMap(commentsList);
+var comments = (commentsMap) => {
   let commentsHTML = Object.values(commentsMap).filter((comment) => comment.post_id == comment.parent_id).map((comment) => generateCommentHTML(commentsMap, comment.id)).join("");
   return commentsHTML;
 };
@@ -20415,19 +20386,38 @@ var comments = (commentsList) => {
 var buildPostDetailsPage = async (ctx) => {
   ctx.page.title = `Post Page`;
   ctx.page.descr = `This is the Post - ${ctx.page.slug}`;
-  const data = await fetchSpecificPostBySlug(ctx);
-  console.log(data);
-  const postDetailsData = data[0];
-  const commentsData = await fetchCommentsForPost(ctx, postDetailsData.id);
-  console.log(commentsData);
+  const commentsTreeData = await fetchCommentsTreeForPostSlug(ctx, ctx.page.slug);
+  let rootPost = {};
+  let commentsMap = {};
+  commentsTreeData.forEach((comment) => {
+    if (comment.parent_id === null) {
+      rootPost = comment;
+    } else {
+      comment.children = [];
+      comment.depth = 0;
+      comment.descendants = 0;
+      commentsMap[comment.id] = comment;
+    }
+  });
+  commentsTreeData.forEach((comment) => {
+    if (comment.parent_id != null && comment.parent_id != comment.post_id) {
+      commentsMap[comment.parent_id].children.push(comment.id);
+      comment.depth = commentsMap[comment.parent_id].depth + 1;
+      let parent = commentsMap[comment.parent_id];
+      while (parent) {
+        parent.descendants++;
+        parent = commentsMap[parent.parent_id];
+      }
+    }
+  });
   ctx.page.html = /*html*/
   `
     <div class="flex flex-col pt-20">
-        ${await postDetails(postDetailsData)}
+        ${await postDetails(rootPost)}
 
         <div class="divider">Comments</div>
         <section name="comments" class="flex flex-col gap-4">
-            ${commentsData.length > 0 ? await comments(commentsData) : ""}
+            ${commentsTreeData.length > 1 ? comments(commentsMap) : ""}
 
         </section>
     </div>

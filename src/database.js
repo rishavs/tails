@@ -58,6 +58,16 @@ export const fetchCommentsForPost = async (ctx, id) => {
     return result.rows
 }
 
+export const fetchCommentsTreeForPostSlug = async (ctx, slug) => {
+    let conn = connectToPlanetScale(ctx)
+    let result = await conn.execute(/*sql*/`
+        select id, post_id, parent_id, slug, type, content from posts where slug = :slug;`, {slug : slug})
+    if (result.rows.length == 0) {
+        throw new Error(404, {cause: "this post doesn't exists in the db"})
+    }
+    return result.rows
+}
+
 export const getUserDetails = async (ctx, email) => {
     let conn = connectToPlanetScale(ctx)
     let query = 'select * from users where google_id=:email or apple_id=:email limit 1'

@@ -27,7 +27,7 @@ export const header =  (ctx) => {
         </button>
    
         <div id="loginControls" class="mx-1 flex items-center" >
-            <a href="/p/new" class="btn btn-square btn-error btn-outline mx-1">
+            <a href="/p/new" class="btn btn-square mx-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>

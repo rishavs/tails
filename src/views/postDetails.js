@@ -63,7 +63,7 @@ export const postDetails = async (post) => {
         </div>
 
         <!-- The summary row -->
-        <div class="bg-base-300 rounded border-l-2 border-white p-2 lg:p-4 flex flex-col gap-2 lg:gap-4 my-2">
+        <div class="bg-base-300 rounded-btn border-l-2 border-neutral p-2 lg:p-4 flex flex-col gap-2 lg:gap-4 my-2">
             <p class="opacity-70 text-xs">From the page's descritpion in [google.com]</p> 
             <p class="italic prose max-w-none">
             For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.

@@ -1,30 +1,3 @@
-const buildCommentsMap = (commentsList) => {
-    let commentsMap = {};
-
-    commentsList.forEach(comment => {
-        comment.children = [];
-        comment.depth = 0;
-        comment.descendants = 0;
-        commentsMap[comment.id] = comment;
-    });
-
-    commentsList.forEach(comment => {
-        if (comment.post_id != comment.parent_id) {
-            commentsMap[comment.parent_id].children.push(comment.id);
-            comment.depth = commentsMap[comment.parent_id].depth + 1;
-
-            // Increment the descendants count for the parent and all its ancestors
-            let parent = commentsMap[comment.parent_id];
-            while (parent) {
-                parent.descendants++;
-                parent = commentsMap[parent.parent_id];
-            }
-        }
-    });
-
-    return commentsMap;
-}
-
 const generateCommentHTML = (commentsMaps, commentId) => {
     const comment = commentsMaps[commentId];
     let childrenHTML = comment.children.map(childId => generateCommentHTML(commentsMaps, childId)).join('');
@@ -150,8 +123,7 @@ const generateCommentHTML = (commentsMaps, commentId) => {
     `;
 }
 
-export const comments = (commentsList) => {   
-    let commentsMap = buildCommentsMap(commentsList);
+export const comments = (commentsMap) => {   
     let commentsHTML = Object.values(commentsMap)
         .filter(comment => comment.post_id == comment.parent_id)
         .map(comment => generateCommentHTML(commentsMap, comment.id))

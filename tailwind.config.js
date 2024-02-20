@@ -36,6 +36,15 @@ module.exports = {
             "nord",
             "sunset",
             {
+                wintermoon: {
+                    ...require("daisyui/src/theming/themes")["winter"],
+                    "primary": "#0284c7",
+                    "error": "#f472b6",
+                    "warning": "#ead173",
+
+                },
+            },
+            {
                 lux: {
                     ...require("daisyui/src/theming/themes")["pastel"],
                     "--rounded-box": "1rem", // border radius rounded-box utility class, used in card and other large boxes
