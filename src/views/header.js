@@ -26,17 +26,17 @@ export const header =  (ctx) => {
     
         </button>
    
-        <div id="loginControls" class="mx-1 flex items-center" >
-            <a href="/p/new" class="btn btn-square mx-1">
+        <div id="loginControls" class="flex items-center" >
+            <a href="/p/new" class="btn btn-sm lg:btn-md">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-
+                New
             </a>
 
             <div class="dropdown dropdown-end mx-1">
-                <label tabindex="0" class="btn btn-square btn-error btn-outline avatar p-1">
-                    <img class="rounded" src="/pub/bm.png" />
+                <label tabindex="0" class="btn btn-sm lg:btn-md btn-square btn-outline avatar">
+                    <img class="rounded-btn" src="/pub/bm.png" />
                 </label>
                 <ul tabindex="0" class="z-20 mt-3 p-2 shadow menu lg:menu-lg dropdown-content bg-base-200 rounded-box w-52">
                     <li>

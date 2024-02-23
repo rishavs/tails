@@ -4,20 +4,20 @@ const generateCommentHTML = (commentsMaps, commentId) => {
 
     return /*html*/`
     <details class="collapse shadow-xl open:shadow-none border open:border-t border-base-300" open>
-        <summary class="collapse-title bg-base-100 px-8 border-l border-r border-base-300">
+        <summary class="collapse-title bg-base-100 px-4 lg:px-8 border-l border-r border-base-300">
             <!-- The author row -->
             <div class="flex items-center justify-between">
                 <!-- author details -->
                 <div class="flex items-center gap-2">
                     <a class="btn btn-sm relative flex items-center overflow-hidden lg:btn-md hover:underline">
-                        <img class="absolute -left-2 w-10 rounded-r-full shadow-lg lg:w-16" src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=facearea&amp;facepad=4&amp;w=256&amp;h=256&amp;q=80" />
+                        <img class="absolute -left-2 w-10 rounded-r-full shadow-lg lg:w-16" src="${comment.author_thumb}" />
                         <div class="max-w-28 pl-8 lg:max-w-48 lg:pl-12">
-                            <div class="truncate">Andrew Alfred Dingus Berrius</div>
+                            <div class="truncate">${comment.author_name}</div>
                         </div>
                     </a>
-                    <p class="">        
-                        <span class="opacity-50 ">posted: </span>
-                        <span class="opacity-50 ">12 hrs ago </span>
+                    <p class="text-xs lg:text-sm opacity-50">        
+                        <span class="">posted: </span>
+                        <span class="">12 hrs ago </span>
                     </p>
                 </div>
                   <!-- descendants -->
@@ -42,14 +42,14 @@ const generateCommentHTML = (commentsMaps, commentId) => {
 
                 <!-- The controls Row -->
                 <div class="flex items-center justify-between py-4">
-                    <div class="flex gap-2">
-                        <button class="btn btn-sm lg:btn-md btn-warning">                                    
+                    <div class="join">
+                        <button class="btn btn-sm lg:btn-md btn-warning join-item">                                    
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="5" stroke="currentColor" class="size-4 lg:size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
                             </svg>
                             <span>1</span>
                         <button>
-                        <button class="btn btn-sm btn-ghost lg:btn-md">
+                        <button class="btn btn-sm lg:btn-md join-item">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 lg:size-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
                             </svg>
@@ -80,7 +80,7 @@ const generateCommentHTML = (commentsMaps, commentId) => {
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                                 </svg>
                             </div>
-                            <ul tabindex="0" class="dropdown-content z-60 menu p-2 shadow-lg bg-base-100 rounded-box border border-base-300">
+                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box border border-base-300">
                                 <li><a>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 lg:size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
