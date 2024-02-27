@@ -53,7 +53,7 @@ export const generateHTML = (ctx) => {
                     <div class="grow-0 w-full lg:min-w-[128] lg:w-[50rem] lg:pt-8 lg:px-4">
         
                     <!-- Header Content -->
-                        <header id="header_container" class="navbar sticky top-0 bg-primary opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10">
+                        <header id="header_container" class="navbar sticky top-0 bg-primary opacity-90 rounded-b-box lg:rounded-box border border-base-300 shadow-lg h-8 lg:h-20 z-10 px-4 lg:px-8">
                             ${header(ctx)}
                         </header>
 

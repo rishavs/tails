@@ -1,5 +1,6 @@
 import { saveNewPostInDB } from "../database";
 import { nanoid } from "nanoid";
+import { getRandomSlug } from "./slugify";
 
 export const saveNewPost = async (ctx) => {
 
@@ -12,8 +13,8 @@ export const saveNewPost = async (ctx) => {
     // ---------------------------------------
     // Save the post
     // ---------------------------------------
-    ctx.post.id = nanoid(32);
-    ctx.post.slug = nanoid(32);
+    ctx.post.id = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 32)();
+    ctx.post.slug = getRandomSlug();
     let resSaveNewPost = await saveNewPostInDB(ctx)
     if (resSaveNewPost.length == 0) {
         throw new Error(500, {cause: "Failed to save the post in the db"});

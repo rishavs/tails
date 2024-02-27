@@ -4,20 +4,23 @@ import { getUserFromSession } from '../database'
 // This function takes in a sessionId and returns the user info
 // the user info gets added to the context
 // Also add cookies for warnings and stuff
-export const getUserInfo = async (ctx) => {
+export const allowOnlyUser = async (ctx) => {
 
-    let sessionId = ctx.req.cookies.D_SID
-    if (!sessionId) {
-        throw new Error("401", { cause: "No session id present in the cookie" })
-    }
-    console.log("Session ID: ", sessionId)
+    // let sessionId = ctx.req.cookies.D_SID
+    // if (!sessionId) {
+    //     throw new Error("401", { cause: "No session id present in the cookie" })
+    // }
+    // console.log("Session ID: ", sessionId)
     
-    let resUserDetails = await getUserFromSession(ctx, sessionId)
-    if (resUserDetails.length == 0) {
-        throw new Error("401", { cause: "No user found for this session id" })
-    }
+    // let resUserDetails = await getUserFromSession(ctx, sessionId)
+    // if (resUserDetails.length == 0) {
+    //     throw new Error("401", { cause: "No user was found for this session" })
+    // }
 
-    ctx.user = resUserDetails[0]
+    // ctx.user = resUserDetails[0]
+    if (!ctx.user) {
+        throw new Error("401", { cause: "No valid session was found for this user" })
+    }
 
     // ------------------------------------------
     // TODO - Tell the user about the punishment status, if any

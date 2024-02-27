@@ -1,6 +1,7 @@
 import {jwtVerify, createRemoteJWKSet} from 'jose'
-import { nanoid } from 'nanoid'
+import { customAlphabet, nanoid } from 'nanoid'
 import { checkIfUserBlocked, getUserDetails, addGoogleUser, addNewSession } from '../database'
+import { getRandomSlug } from './slugify'
 
 
 // TODO - handle all errors in the UI. This is a post req.
@@ -61,8 +62,8 @@ export const signinGoogleUser = async (ctx) => {
         console.log(`user doesn't exist`)
 
         // create new user with default values
-        user.id             = nanoid(32)
-        user.slug           = nanoid(32)
+        user.id             = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 32)()
+        user.slug           = getRandomSlug()
         user.name           = payload.name
         user.thumb          = `https://robohash.org/${user.slug}?set=set3`
         user.honorific      = "Mx"

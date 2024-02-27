@@ -9,7 +9,7 @@ export const buildPostDetailsPage = async (ctx) => {
     ctx.page.descr = `This is the Post - ${ctx.page.slug}`
 
     const commentsTreeData = await fetchCommentsTreeForPostSlug(ctx, ctx.page.slug)
-    console.log("Comments Tree Data: ", commentsTreeData)
+    // console.log("Comments Tree Data: ", commentsTreeData)
     let rootPost = {};
     let commentsMap = {};
 

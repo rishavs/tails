@@ -48,6 +48,81 @@ CREATE TABLE IF NOT EXISTS `users` (
     `deleted_at`    timestamp DEFAULT NULL
 );
 
+CREATE TABLE IF NOT EXISTS `posts` ( 
+    `id`            varchar(32) PRIMARY KEY, 
+    `author_id`     varchar(32) NOT NULL, 
+    `is_anonymous`     boolean NOT NULL DEFAULT false,
+
+    `slug`          varchar(64) UNIQUE NOT NULL, 
+    `category`      varchar(8) NOT NULL, 
+    `type`          varchar(8) NOT NULL,
+    `title`         varchar(256) NOT NULL, 
+
+    `link`          varchar(256), 
+    `thumb`         varchar(256), 
+    `image`         varchar(256),
+    `image_alt`     varchar(256),
+    `favicon`       varchar(256),
+
+    `og_title`      varchar(256),
+    `og_desc`       varchar(1024),
+    `og_image`      varchar(256),
+    `og_image_alt`  varchar(256),
+    `og_type`       varchar(32),
+    `og_url`        varchar(256),
+
+    -- text content
+    `content`       varchar(4096) NOT NULL, 
+
+    -- stats
+    `digs_count`    int NOT NULL DEFAULT 1, -- update every time user digs
+    `buries_count`  int NOT NULL DEFAULT 0, -- NOT Implmented for now
+    `comments_count`int NOT NULL DEFAULT 0, -- update every time user comments
+    `saves_count`   int NOT NULL DEFAULT 0, -- update every time user saves
+    
+    -- `comments_value`int NOT NULL, -- sum of all comments' digs. NOT Implmented for now
+    -- `total_value`   int NOT NULL, -- digs count - buries count + avg comments value + saves count
+
+    `is_locked`     boolean NOT NULL DEFAULT false,
+    `locked_for`    text,
+
+    `created_at`    timestamp NULL DEFAULT CURRENT_TIMESTAMP, 
+    `updated_at`    timestamp NULL DEFAULT CURRENT_TIMESTAMP, 
+    `archived_at`   timestamp , -- after n days, archive posts. archived posts are not shown in feed and are read only
+    `locked_at`     timestamp , -- similar to archived_at but is done intentionally for posts which are running off course
+    `deleted_at`    timestamp 
+) ;
+
+CREATE TABLE IF NOT EXISTS `comments` ( 
+    `id`            varchar(32) PRIMARY KEY, 
+    `author_id`     varchar(32) NOT NULL, 
+    `is_anonymous`  boolean NOT NULL DEFAULT false,
+
+    -- text content
+    `content`       varchar(4096) NOT NULL, 
+
+    -- stats
+    `digs_count`    int NOT NULL DEFAULT 1, -- update every time user digs
+    `buries_count`  int NOT NULL DEFAULT 0, -- NOT Implmented for now
+    `comments_count`int NOT NULL DEFAULT 0, -- update every time user comments
+    `saves_count`   int NOT NULL DEFAULT 0, -- update every time user saves
+    
+    -- `comments_value`int NOT NULL, -- sum of all comments' digs. NOT Implmented for now
+    -- `total_value`   int NOT NULL, -- digs count - buries count + avg comments value + saves count
+
+    `is_locked`     boolean NOT NULL DEFAULT false,
+    `locked_for`    text,
+
+    `created_at`    timestamp NULL DEFAULT CURRENT_TIMESTAMP, 
+    `updated_at`    timestamp NULL DEFAULT CURRENT_TIMESTAMP, 
+    `archived_at`   timestamp , -- after n days, archive posts. archived posts are not shown in feed and are read only
+    `locked_at`     timestamp , -- similar to archived_at but is done intentionally for posts which are running off course
+    `deleted_at`    timestamp 
+) ;
+
+
+-------------------------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `posts_dug` (
     `post_id`       varchar(32) NOT NULL, 
     `user_id`       varchar(32) NOT NULL, 

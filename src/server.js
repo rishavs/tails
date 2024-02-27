@@ -5,10 +5,12 @@ import { generateHTML } from "./handlers/generateHTML";
 import { PostCategories } from "./defs";
 import { buildErrorPage } from "./handlers/buildErrorPage";
 import { signinGoogleUser } from "./handlers/signinGoogleUser";
-import { getUserInfo } from "./handlers/getUserInfo";
+import { allowOnlyUser } from "./handlers/allowOnlyUser";
 
 
 import { parseCookies } from "./utils";
+import { getUserFromSession } from "./database";
+
 import { signout } from "./handlers/signout";
 import { buildNewPostPage } from "./handlers/buildNewPostPage";
 import { getLinkPreview, getPreviewFromContent } from "link-preview-js";
@@ -28,13 +30,13 @@ let routes = {
 
     "GET/"             : [buildAboutPage, generateHTML],
     "GET/search"       : [buildAboutPage, generateHTML],
-    "GET/p/new"        : [getUserInfo, buildNewPostPage, generateHTML],
+    "GET/p/new"        : [allowOnlyUser, buildNewPostPage, generateHTML],
     "GET/u/me"         : [buildAboutPage, generateHTML],
 
-    "POST/p/new" : [getUserInfo, validateNewPost, getLinkData, saveNewPost],
+    "POST/p/new"        : [allowOnlyUser, validateNewPost, getLinkData, saveNewPost],
 
-    "GET/error"             : [buildErrorPage, generateHTML],
-    "GET/signout"           : [signout],
+    "GET/error"         : [buildErrorPage, generateHTML],
+    "GET/signout"       : [signout],
 
     "GET/:cat"         : [buildAboutPage, generateHTML],
     "GET/p/:slug"      : [buildPostDetailsPage, generateHTML],
@@ -103,13 +105,18 @@ export default {
         // see https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#content_security_policy
 
         // ------------------------------------------
+        // COOP - TODO
+        // ------------------------------------------
+        // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy
+        
+        // ------------------------------------------
         // Put on the HELMET!!! TODO
         // ------------------------------------------
 
         // ------------------------------------------
         // Set CORS - TODO
         // ------------------------------------------
-
+        
         // ------------------------------------------
         // TODO - serve everything zipped
         // ------------------------------------------
@@ -143,6 +150,17 @@ export default {
         } else {
             ctx.res.headers.append('Powered-by', 'VIEW: Pika Pika Pika Choooo')
             ctx.res.headers.append('Content-Type', 'text/html; charset=UTF-8')
+        }
+
+        // ------------------------------------------
+        // Get user details
+        // ------------------------------------------
+        let sessionId = ctx.req.cookies.D_SID
+        if (sessionId) {
+            let resUserDetails = await getUserFromSession(ctx, sessionId)
+            if (resUserDetails.length > 0) {
+                ctx.user = resUserDetails[0]
+            }
         }
 
         // ------------------------------------------
