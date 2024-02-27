@@ -22,18 +22,18 @@ const generateCommentHTML = (commentsMaps, commentId) => {
                 </div>
                   <!-- descendants -->
 
-                <div class="opacity-50 ">
+                <div class="text-xs lg:text-sm opacity-50 ">
                     [${comment.descendants}]
                 </div>
             </div>
           
         </summary>
-        <div class="flex flex-col gap-2 lg:gap-4"> 
+        <div class="flex flex-col"> 
 
-            <section name="article" class="flex flex-col gap-2 rounded-b-box bg-base-100 p-0 px-4 lg:px-8 shadow-lg border-l border-r border-base-300">
+            <section name="article" class="flex flex-col rounded-b-box bg-base-100 p-0 px-4 lg:px-8 border border-base-300">
 
                 <!-- The post content row -->
-                <article class="lg:prose-xl prose max-w-none py-2">
+                <article class="lg:prose-xl prose max-w-none">
             
                     <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
                     <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>

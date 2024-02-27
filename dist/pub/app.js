@@ -52,6 +52,24 @@ document.getElementById("post_descr_textarea")?.addEventListener("input", async 
   let numOfEnteredChars = post_descr_textarea.value.length;
   descr_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.contentMaxLength} chars`;
 });
+document.getElementById("collapse_comments_btn")?.addEventListener("click", async (e) => {
+  document.querySelectorAll(".collapse")?.forEach((comment) => {
+    comment.open = false;
+  });
+});
+document.getElementById("expand_comments_btn")?.addEventListener("click", async (e) => {
+  document.querySelectorAll(".collapse")?.forEach((comment) => {
+    console.log("Expanding comment: ", comment);
+    comment.open = true;
+  });
+});
+document.querySelectorAll(".collapse")?.forEach((comment) => {
+  comment.addEventListener("toggle", (e) => {
+    if (comment.open) {
+      comment.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+  });
+});
 if (!localStorage.getItem("slug")) {
   let loginControlsContainer = document.getElementById("loginControls");
   if (loginControlsContainer) {

@@ -41,23 +41,6 @@ export const fetchAllPosts = async (ctx) => {
     return result.rows
 }
 
-export const fetchSpecificPostBySlug = async (ctx) => {
-    let conn = connectToPlanetScale(ctx)
-
-    let result = await conn.execute('select * from posts where slug=:slug', {slug : ctx.page.slug})
-    if (result.rows.length == 0) {
-        throw new Error(404, {cause: "this post doesn't exists in the db"})
-    }
-    return result.rows
-}
-
-export const fetchCommentsForPost = async (ctx, id) => {
-    let conn = connectToPlanetScale(ctx)
-    let result = await conn.execute(/*sql*/`
-        select id, post_id, parent_id, slug, type, content from posts where post_id=:id and parent_id is not null;`, {id : id})
-    return result.rows
-}
-
 export const fetchCommentsTreeForPostSlug = async (ctx, slug) => {
     let conn = connectToPlanetScale(ctx)
     let result = await conn.execute(/*sql*/`

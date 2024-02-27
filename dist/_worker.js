@@ -17999,6 +17999,42 @@ var drawer = (ctx, prefix) => {
   );
 };
 
+// src/views/floaters.js
+var floaters = (ctx) => {
+  return (
+    /*html*/
+    `
+    <button class="btn btn-sm btn-square fixed bottom-32 right-8 z-10 border border-base-100 shadow-xl opacity-75">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5" />
+        </svg>
+    </button>
+
+    <button class="btn btn-sm btn-square fixed bottom-20 right-8 z-10 border border-base-100 shadow-xl opacity-75">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg> 
+    </button>
+    <button class="btn btn-sm btn-square fixed bottom-20 right-20 z-10 border border-base-100 shadow-xl opacity-75">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+    </button>
+
+    <button class="btn btn-sm btn-square fixed bottom-8 right-8 z-10 border border-base-100 shadow-xl opacity-75">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg> 
+    </button>
+    <button class="btn btn-sm btn-square fixed bottom-8 right-20 z-10 border border-base-100 shadow-xl opacity-75">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+    </button>
+    `
+  );
+};
+
 // src/views/header.js
 var header = (ctx) => {
   return (
@@ -18211,6 +18247,7 @@ var generateHTML = (ctx) => {
                         <main id="main_container">
                             ${ctx.page.html}
                         </main>
+                        ${floaters(ctx)}
                     </div>
         
                     <!-- Right Sidepanel -->
@@ -20154,6 +20191,8 @@ var postDetails = async (post) => {
 
             </div>
             <div class="flex items-center gap-2">
+                <span class="text-xs lg:text-sm opacity-50">in </span>
+
                 <a href="" class="btn btn-sm lg:btn-md flex items-center hover:underline">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 lg:size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" />
@@ -20202,12 +20241,6 @@ var postDetails = async (post) => {
             <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
             <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>
         </article>
-        <p class="text-xs italic opacity-70 pt-2 lg:pt-4 text-end pr-2">
-            <span class="">Posted </span>\xB7
-            <span class="">12 hrs ago by </span> \xB7
-            <span class="">[OP] </span>
-            <a href="" class="underline"> Lord Dingus Berrius </a>
-        </p>
         
         <div class="divider m-0"></div>
 
@@ -20304,18 +20337,18 @@ var generateCommentHTML = (commentsMaps, commentId) => {
                 </div>
                   <!-- descendants -->
 
-                <div class="opacity-50 ">
+                <div class="text-xs lg:text-sm opacity-50 ">
                     [${comment.descendants}]
                 </div>
             </div>
           
         </summary>
-        <div class="flex flex-col gap-2 lg:gap-4"> 
+        <div class="flex flex-col"> 
 
-            <section name="article" class="flex flex-col gap-2 rounded-b-box bg-base-100 p-0 px-4 lg:px-8 shadow-lg border-l border-r border-base-300">
+            <section name="article" class="flex flex-col rounded-b-box bg-base-100 p-0 px-4 lg:px-8 border border-base-300">
 
                 <!-- The post content row -->
-                <article class="lg:prose-xl prose max-w-none py-2">
+                <article class="lg:prose-xl prose max-w-none">
             
                     <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
                     <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>
@@ -20444,8 +20477,19 @@ var buildPostDetailsPage = async (ctx) => {
     <div class="flex flex-col pt-20">
         ${await postDetails(rootPost)}
 
-        <div class="divider">  
-        ${commentsTreeData.length - 1} Comments
+        <div class="divider py-4 lg:py-8 flex">  
+            <button class="btn btn-sm lg:btn-md" id="collapse_comments_btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 lg:size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+                </svg>
+          
+            <button>
+            ${commentsTreeData.length - 1} Comments
+            <button class="btn btn-sm lg:btn-md" id="expand_comments_btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 lg:size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+            <button>
         </div>
         <section name="comments" class="flex flex-col gap-4">
             ${commentsTreeData.length > 1 ? comments(commentsMap) : ""}

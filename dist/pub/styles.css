@@ -4830,14 +4830,6 @@ input.tab:checked + .tab-content,
     border-color: var(--btn-color, var(--fallback-b2));
   }
 
-  .btn-primary {
-    --btn-color: var(--fallback-p);
-  }
-
-  .btn-info {
-    --btn-color: var(--fallback-in);
-  }
-
   .btn-warning {
     --btn-color: var(--fallback-wa);
   }
@@ -4894,21 +4886,7 @@ input.tab:checked + .tab-content,
   outline-offset: 2px;
 }
 
-.btn-primary {
-  --tw-text-opacity: 1;
-  color: var(--fallback-pc,oklch(var(--pc)/var(--tw-text-opacity)));
-  outline-color: var(--fallback-p,oklch(var(--p)/1));
-}
-
 @supports (color: oklch(0 0 0)) {
-  .btn-primary {
-    --btn-color: var(--p);
-  }
-
-  .btn-info {
-    --btn-color: var(--in);
-  }
-
   .btn-warning {
     --btn-color: var(--wa);
   }
@@ -4916,12 +4894,6 @@ input.tab:checked + .tab-content,
   .btn-error {
     --btn-color: var(--er);
   }
-}
-
-.btn-info {
-  --tw-text-opacity: 1;
-  color: var(--fallback-inc,oklch(var(--inc)/var(--tw-text-opacity)));
-  outline-color: var(--fallback-in,oklch(var(--in)/1));
 }
 
 .btn-warning {
@@ -6619,8 +6591,24 @@ html:has(.drawer-toggle:checked) {
   left: -0.5rem;
 }
 
+.bottom-20 {
+  bottom: 5rem;
+}
+
+.bottom-8 {
+  bottom: 2rem;
+}
+
 .right-2 {
   right: 0.5rem;
+}
+
+.right-20 {
+  right: 5rem;
+}
+
+.right-8 {
+  right: 2rem;
 }
 
 .top-0 {
@@ -6631,16 +6619,20 @@ html:has(.drawer-toggle:checked) {
   top: 0.5rem;
 }
 
+.bottom-36 {
+  bottom: 9rem;
+}
+
+.bottom-32 {
+  bottom: 8rem;
+}
+
 .z-10 {
   z-index: 10;
 }
 
 .z-20 {
   z-index: 20;
-}
-
-.float-left {
-  float: left;
 }
 
 .m-0 {
@@ -6677,8 +6669,16 @@ html:has(.drawer-toggle:checked) {
   -webkit-line-clamp: 3;
 }
 
+.block {
+  display: block;
+}
+
 .inline-block {
   display: inline-block;
+}
+
+.inline {
+  display: inline;
 }
 
 .flex {
@@ -6697,19 +6697,9 @@ html:has(.drawer-toggle:checked) {
   display: none;
 }
 
-.size-24 {
-  width: 6rem;
-  height: 6rem;
-}
-
 .size-4 {
   width: 1rem;
   height: 1rem;
-}
-
-.size-16 {
-  width: 4rem;
-  height: 4rem;
 }
 
 .h-24 {
@@ -6732,10 +6722,6 @@ html:has(.drawer-toggle:checked) {
   height: 24rem;
 }
 
-.h-10 {
-  height: 2.5rem;
-}
-
 .min-h-screen {
   min-height: 100vh;
 }
@@ -6746,6 +6732,10 @@ html:has(.drawer-toggle:checked) {
 
 .w-12 {
   width: 3rem;
+}
+
+.w-16 {
+  width: 4rem;
 }
 
 .w-4 {
@@ -6770,10 +6760,6 @@ html:has(.drawer-toggle:checked) {
 
 .w-full {
   width: 100%;
-}
-
-.w-16 {
-  width: 4rem;
 }
 
 .min-w-80 {
@@ -6848,6 +6834,10 @@ html:has(.drawer-toggle:checked) {
   gap: 1rem;
 }
 
+.self-end {
+  align-self: flex-end;
+}
+
 .overflow-hidden {
   overflow: hidden;
 }
@@ -6898,6 +6888,11 @@ html:has(.drawer-toggle:checked) {
 
 .border-t {
   border-top-width: 1px;
+}
+
+.border-base-100 {
+  --tw-border-opacity: 1;
+  border-color: var(--fallback-b1,oklch(var(--b1)/var(--tw-border-opacity)));
 }
 
 .border-base-300 {
@@ -6971,10 +6966,6 @@ html:has(.drawer-toggle:checked) {
   padding: 0px;
 }
 
-.p-1 {
-  padding: 0.25rem;
-}
-
 .p-10 {
   padding: 2.5rem;
 }
@@ -7020,10 +7011,6 @@ html:has(.drawer-toggle:checked) {
   padding-left: 2rem;
 }
 
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .pt-16 {
   padding-top: 4rem;
 }
@@ -7046,10 +7033,6 @@ html:has(.drawer-toggle:checked) {
 
 .text-center {
   text-align: center;
-}
-
-.text-end {
-  text-align: end;
 }
 
 .text-2xl {
@@ -7096,16 +7079,16 @@ html:has(.drawer-toggle:checked) {
   color: transparent;
 }
 
-.underline {
-  text-decoration-line: underline;
-}
-
 .opacity-50 {
   opacity: 0.5;
 }
 
 .opacity-70 {
   opacity: 0.7;
+}
+
+.opacity-75 {
+  opacity: 0.75;
 }
 
 .opacity-90 {
@@ -7762,6 +7745,11 @@ iframe {
 }
 
 @media (min-width: 1024px) {
+  .lg\:my-4 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
   .lg\:flex {
     display: flex;
   }
@@ -7773,11 +7761,6 @@ iframe {
   .lg\:size-6 {
     width: 1.5rem;
     height: 1.5rem;
-  }
-
-  .lg\:size-24 {
-    width: 6rem;
-    height: 6rem;
   }
 
   .lg\:h-20 {
@@ -7792,16 +7775,16 @@ iframe {
     width: 4rem;
   }
 
+  .lg\:w-24 {
+    width: 6rem;
+  }
+
   .lg\:w-6 {
     width: 1.5rem;
   }
 
   .lg\:w-\[50rem\] {
     width: 50rem;
-  }
-
-  .lg\:w-24 {
-    width: 6rem;
   }
 
   .lg\:min-w-\[128\] {
@@ -7842,6 +7825,16 @@ iframe {
     padding-right: 2rem;
   }
 
+  .lg\:py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .lg\:py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
   .lg\:pl-12 {
     padding-left: 3rem;
   }
@@ -7852,10 +7845,6 @@ iframe {
 
   .lg\:pt-20 {
     padding-top: 5rem;
-  }
-
-  .lg\:pt-4 {
-    padding-top: 1rem;
   }
 
   .lg\:pt-8 {

@@ -50,5 +50,5 @@ let view = ( errorCode, errorMsg) => {
 
 export const errorPage =  (errorCode, errorMsg) => {
     document.title = `Error ${errorCode}`
-    document.querySelector('main')!.innerHTML = view( errorCode, errorMsg)
+    document.querySelector('main')?.innerHTML = view( errorCode, errorMsg)
 }

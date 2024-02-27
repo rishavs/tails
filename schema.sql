@@ -48,6 +48,39 @@ CREATE TABLE IF NOT EXISTS `users` (
     `deleted_at`    timestamp DEFAULT NULL
 );
 
+CREATE TABLE IF NOT EXISTS `posts_dug` (
+    `post_id`       varchar(32) NOT NULL, 
+    `user_id`       varchar(32) NOT NULL, 
+    `type`          varchar(8) NOT NULL,
+    PRIMARY KEY (`post_id`, `user_id`)
+);
+
+CREATE TABLE IF NOT EXISTS `voted` (
+    `post_id`       varchar(32) NOT NULL, 
+    `user_id`       varchar(32) NOT NULL, 
+    `type`          ENUM(
+        'Dug',
+        'Aggressive or Offensive',
+        'Out of Context',
+        'Factually wrong',
+        'Intentionally misleading'
+    ),
+   PRIMARY KEY (`post_id`, `user_id`)
+);
+CREATE TABLE IF NOT EXISTS `flagged` (
+    `post_id`       varchar(32) NOT NULL, 
+    `user_id`       varchar(32) NOT NULL, 
+    `type`          ENUM(
+        'Dug',
+        'Aggressive or Offensive',
+        'Out of Context',
+        'Factually wrong',
+        'Intentionally misleading'
+    ),
+   PRIMARY KEY (`post_id`, `user_id`)
+);
+
+
 CREATE TABLE IF NOT EXISTS `punishments` (
     `user_id`       varchar(24) NOT NULL,
     `post_id`       varchar(24) NOT NULL,

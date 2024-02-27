@@ -78,6 +78,31 @@ document.getElementById("post_descr_textarea")?.addEventListener("input", async(
     descr_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.contentMaxLength} chars`;
 })
 
+document.getElementById("collapse_comments_btn")?.addEventListener("click", async(e) => {
+    // remove "open" attribute from each of these
+    document.querySelectorAll(".collapse")?.forEach(comment => {
+        comment.open = false;
+        // comment.removeAttribute("open")
+    })
+})
+
+document.getElementById("expand_comments_btn")?.addEventListener("click", async(e) => {
+    // add "open" attribute to each of these
+    document.querySelectorAll(".collapse")?.forEach(comment => {
+        console.log("Expanding comment: ", comment)
+        comment.open = true;
+        // comment.setAttribute("open", "")
+    })
+})
+
+// Scroll the content of the details element every time it is opened
+document.querySelectorAll(".collapse")?.forEach(comment => {
+    comment.addEventListener("toggle", (e) => {
+        if (comment.open) {
+            comment.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+        }
+    })
+})
 
 // ---------------------------------------
 // Setup Google sign-in

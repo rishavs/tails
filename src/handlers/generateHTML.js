@@ -1,4 +1,5 @@
 import { drawer } from "../views/drawer"
+import { floaters } from "../views/floaters"
 import { header } from "../views/header"
 import { themeModal } from "../views/themeModal"
 
@@ -77,6 +78,7 @@ export const generateHTML = (ctx) => {
                         <main id="main_container">
                             ${ctx.page.html}
                         </main>
+                        ${floaters(ctx)}
                     </div>
         
                     <!-- Right Sidepanel -->
