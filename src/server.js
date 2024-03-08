@@ -19,10 +19,10 @@ import { saveNewPost } from "./handlers/saveNewPost";
 import { getLinkData } from "./handlers/getLinkData";
 import { buildPostDetailsPage } from "./handlers/buildPostDetailsPage";
 
-// pass the link directly
-getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
-  console.log(data)
-);
+// // pass the link directly
+// getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
+//   console.log(data)
+// );
 
 let routes = {
     "GET/api/hello"         : [sayHello],

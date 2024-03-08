@@ -45,7 +45,7 @@ export const signinGoogleUser = async (ctx) => {
     // ------------------------------------------
     let resUserBlocked = await checkIfUserBlocked(ctx, payload.email)
     if (resUserBlocked.length != 0) {
-        throw new Error("503", { cause: `This user id is blocked. 
+        throw new Error("401", { cause: `This user id is blocked. 
         You can no longer create an account on Digglu` })
     }
 

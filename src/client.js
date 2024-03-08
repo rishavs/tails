@@ -1,4 +1,4 @@
-import { NewPostSchema } from "./defs";
+import { NewPostSchema, UserSlugSchema } from "./defs";
 import { parseCookies } from "./utils";
 
 // ---------------------------------------
@@ -63,6 +63,24 @@ document.getElementById("post_type")?.addEventListener("click", async(e) => {
     }
 
 })
+const getUserSlugCharCount = async (e) => {
+    let numOfEnteredChars = user_slug_input.value.length;
+    user_slug_input_char_count.innerText = numOfEnteredChars + `/${UserSlugSchema.maxLength} chars`;
+}
+if (user_slug_input) {
+    getUserSlugCharCount();
+    user_slug_input.addEventListener("input", getUserSlugCharCount)
+}
+const getUserNameCharCount = async (e) => {
+    let numOfEnteredChars = user_name_input.value.length;
+    user_name_input_char_count.innerText = numOfEnteredChars + `/${UserSlugSchema.maxLength} chars`;
+}
+if (user_name_input) {
+    getUserNameCharCount();
+    user_name_input.addEventListener("input", getUserNameCharCount)
+}
+
+
 document.getElementById("post_link_input")?.addEventListener("input", async(e) => {
     let numOfEnteredChars = post_link_input.value.length;
     post_link_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.linkMaxLength} chars`;

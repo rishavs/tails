@@ -17950,6 +17950,14 @@ var NewPostSchema = {
   contentMinLength: 32,
   contentMaxLength: 4096
 };
+var UserSlugSchema = {
+  minLength: 8,
+  maxLength: 64
+};
+var UserNameSchema = {
+  minLength: 4,
+  maxLength: 32
+};
 
 // src/views/drawer.js
 var navBuilder = (ctx, group) => {
@@ -18037,6 +18045,7 @@ var floaters = (ctx) => {
 
 // src/views/header.js
 var header = (ctx) => {
+  console.log("Header User: ", ctx.user);
   return (
     /*html*/
     `
@@ -18066,6 +18075,12 @@ var header = (ctx) => {
             </svg>
         </button>
 
+        <!-- Only show if logged in -->
+
+        ${ctx.user ? (
+      /*html*/
+      `
+        
         <!-- New -->
         <a href="/p/new" class="btn btn-square">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -18073,46 +18088,59 @@ var header = (ctx) => {
             </svg>
         </a>
 
-        <!-- User controls. Only show if logged in -->
+        <!-- Identity Controls -->
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-square flex items-center overflow-hidden lg:btn-md hover:underline">
+                <img class="" src="${ctx.user.thumb}" />
+            </label>
+            <ul tabindex="0" class="z-20 shadow menu menu-lg dropdown-content bg-base-200 rounded-box mt-2">
+                <li>
+                    <a class="">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
 
-        ${ctx.user ? (
-      /*html*/
-      `
-            
-            <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-square m-1 pt-1">
-                    <img src="${ctx.user.thumb}" alt="avatar" class="avatar" loading="lazy" decoding=""/>
-                </label>
-                <ul tabindex="0" class="z-20 shadow menu menu-lg dropdown-content bg-base-200 rounded-box w-52">
-                    <li>
-                        <a class="">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-
-                            Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a class="" onclick="theme_modal.showModal()">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
-                            </svg>
-                            Themes
-                        </a>
-                    </li>
-                    <li>
-                        <a id="signout_action"> 
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                            </svg>
-                        
-                        Signout 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            `
+                        Profile
+                    </a>
+                </li>
+                <li>
+                    <a class="" >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46" />
+                        </svg>                      
+                        Notifications
+                        <div class="badge">+99</div>
+                    </a>
+                </li>
+                <li>
+                    <a class="" >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                        </svg>
+                        Messages
+                        <div class="badge">+99</div>
+                    </a>
+                </li>
+                <li>
+                    <a class="" onclick="theme_modal.showModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+                        </svg>
+                        Themes
+                    </a>
+                </li>
+                <li>
+                    <a id="signout_action"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                        </svg>
+                    
+                    Signout 
+                    </a>
+                </li>
+            </ul>
+        </div>
+        `
     ) : ""}
         
         <div id="loginControls" ></div>
@@ -18186,12 +18214,110 @@ var themeModal = () => {
   );
 };
 
+// src/views/freModal.js
+var freModal = (ctx) => {
+  return ctx.user ? (
+    /*html*/
+    `
+    <!-- Open the modal using ID.showModal() method -->
+    <dialog id="freModal" class="modal modal-bottom lg:modal-middle border border-base-300" open>
+        <div class="modal-box flex flex-col gap-4">
+            
+            <form method="dialog">
+                <button class="btn btn-square absolute right-4 top-4">\u2715</button>
+            </form>
+
+            <form method="" class="w-full flex flex-col gap-4">
+                <h3 class="font-bold text-lg text-center">Welcome to Digglu!</h3>
+                <p class="">Let's set you up with your user details.</p>
+
+                <p class="flex flex-col">
+                    <span class="font-bold">Profile Home</span>
+                    <span>Enter a Unique Id that others can use to see your profile</span>
+                </p>
+
+                <div id="" class="form-control w-full">
+                    
+                    <label class="input input-bordered flex items-center gap-1 has-[:invalid]:border has-[:invalid]:border-error">
+                        <span class="font-bold">https://digglu.com/u/</span>
+                        <input id="user_slug_input" name ="slug" type="text" class="grow" required minlength="${UserSlugSchema.minLength}" maxlength="${UserSlugSchema.maxLength}" value="purple-snapping-turtle" required pattern="[a-zA-Z0-9-]{${UserSlugSchema.maxLength}}" title="Only letters, numbers, and hyphens allowed"/>
+                    </label>
+
+                    <label class="label">
+                        <span class="label-text-alt">
+                            <p>Min ${UserSlugSchema.minLength} chars.</p> 
+                            <p>Only letters, numbers, and hyphens allowed</p>
+                        </span>
+                        <span id="user_slug_input_char_count" class="label-text-alt">0/${UserSlugSchema.maxLength} chars</span>
+
+                    </label>
+                </div>
+                
+                <p class="flex flex-col">
+                    <span class="font-bold">Display Picture and Name</span>
+                    <span>Click on the profile picture or your name to change them</span>
+                </p>
+
+                <div class="form-control w-full">
+                    <div class="group join flex border border-base-300">
+                        <div class="dropdown dropdown-right join-item">
+                            <div tabindex="0" role="button" class="avatar btn join-item btn-lg relative w-20 p-0">
+                            <img class="rounded-r-full border-r border-r-base-300 shadow-lg group-hover:opacity-20" src="https://api.dicebear.com/7.x/pixel-art/svg" alt="avatar" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="absolute size-6 opacity-0 group-hover:opacity-100">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                            </svg>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu menu-lg z-10 w-52 rounded-box bg-base-100 p-2 shadow">
+                            <li><a>Generate Random Avatar</a></li>
+                            <li><a>More Options coming Soon...</a></li>
+                            </ul>
+                        </div>
+                        <div class="btn join-item btn-lg relative grow has-[:invalid]:border has-[:invalid]:border-error">
+                            <input id="user_name_input" name="name" type="text" class="peer input w-full bg-inherit" value="${ctx.user.name.substring(0, UserNameSchema.maxLength)}" required pattern="^s*[a-zA-Z]+(?:s+[a-zA-Z]+)*s*$" title="Only letters, numbers, and single spaces allowed" minLength="${UserNameSchema.minLength}" maxLength="${UserNameSchema.maxLength}"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute size-6 opacity-0 group-hover:opacity-100 peer-focus:hidden">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <label class="label">
+                        <span class="label-text-alt">
+                            <p>Min ${UserNameSchema.minLength} chars. </p>
+                            <p>Only letters, numbers, and single spaces allowed</p>
+                        </span>
+
+                        <span id="user_name_input_char_count"class="label-text-alt">0/${UserNameSchema.maxLength} chars</span>
+                    </label>
+                </div>
+                
+                <button class="btn btn-info self-end">Save</button>
+            </form>
+            <script>
+  const form = document.getElementById("myForm");
+  const inputField = document.getElementById("myInput");
+
+  form.addEventListener("submit", (event) => {
+    if (!inputField.checkValidity()) {
+      event.preventDefault(); // Prevent form submission
+      inputField.focus(); // Set focus back to the input field for correction
+    }
+  });
+<\/script>
+
+        </div>
+    </dialog>
+    <script>
+    <\/script>
+    `
+  ) : "";
+};
+
 // src/handlers/generateHTML.js
 var generateHTML = (ctx) => {
   ctx.res.content = /*html*/
   `
     <!DOCTYPE html>
-    <html lang="en" data-theme="wintermoon">
+    <html lang="en" data-theme="wintermoon" dir="ltr">
 
         <head>
             <meta charset="UTF-8">
@@ -18278,7 +18404,8 @@ var generateHTML = (ctx) => {
                 </div>
             </div>
             <div id = "modals_container">
-                ${themeModal()}
+                ${themeModal(ctx)}
+                ${freModal(ctx)}
             </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
             <div id = "floaters_container"></div>
@@ -18332,19 +18459,29 @@ var errors = {
 };
 var buildErrorPage = (ctx, e) => {
   console.log("Building Error Page", e);
-  let errorCode = ctx.req.params.get("code") || errors[e.message] ? e.message : "500";
-  let errorMsg = ctx.req.params.get("msg") || e.cause || errors["500"].cause;
-  let haiku = errors[errorCode] && errors[errorCode].haikus ? errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : "";
+  let errorCode = "500";
+  let errorMsg = errors["500"].cause;
+  let errorHaiku = errors["500"].haikus[Math.floor(Math.random() * errors["500"].haikus.length)];
+  if (e) {
+    errorCode = e.message;
+    errorMsg = errors[e.message] ? errors[e.message].cause : errors["500"].cause;
+    errorHaiku = errors[e.message] ? errors[e.message].haikus[Math.floor(Math.random() * errors[e.message].haikus.length)] : "";
+  }
+  if (ctx.req.params.get("code") && ctx.req.params.get("msg")) {
+    errorCode = ctx.req.params.get("code");
+    errorMsg = ctx.req.params.get("msg");
+    errorHaiku = errors[errorCode] ? errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : "";
+  }
   console.log(`Error: ${errorCode} - ${errorMsg}`);
   ctx.page.title = "ERROR Page";
   ctx.page.descr = "This is the error page";
   ctx.page.html = /*html*/
   `
-        <article class="prose lg:prose-lg text-center pt-16">
+        <article class="prose lg:prose-lg text-center p-8 pt-16">
             <h1>Error ${errorCode} :( </h1>
             <h3> ${errorMsg} </h3>
             <small> <i>
-                ${haiku}
+                ${errorHaiku}
             </i></small>
         </article>
     `;
@@ -20826,7 +20963,7 @@ var adjectives = [
   "commend",
   "commendable",
   "commercial",
-  "commitment",
+  "committed",
   "commodious",
   "common",
   "communal",
@@ -20836,14 +20973,14 @@ var adjectives = [
   "compatible",
   "competent",
   "competitive",
-  "complement",
+  "complementing",
   "complementary",
   "complemented",
   "complete",
   "complex",
   "compliant",
   "complicated",
-  "compliment",
+  "complimenting",
   "complimentary",
   "composed",
   "comprehensive",
@@ -20872,7 +21009,7 @@ var adjectives = [
   "contagious",
   "contemporary",
   "content",
-  "contentment",
+  "contentious",
   "continuity",
   "contradictory",
   "contrary",
@@ -21147,20 +21284,18 @@ var adjectives = [
   "empathy",
   "empower",
   "empowered",
-  "empowerment",
+  "empowering",
   "empty",
   "enchant",
   "enchanted",
   "enchanting",
-  "encourage",
-  "encouragement",
+  "encouraged",
   "encouraging",
   "endear",
   "endearing",
   "endless",
   "endorse",
   "endorsed",
-  "endorsement",
   "endorsing",
   "endowed",
   "energetic",
@@ -21170,15 +21305,14 @@ var adjectives = [
   "engrossing",
   "enhance",
   "enhanced",
-  "enhancement",
+  "enhancing",
   "enigmatic",
   "enjoy",
   "enjoyable",
   "enjoyed",
   "enjoying",
-  "enjoyment",
   "enlightened",
-  "enlightenment",
+  "enlightening",
   "ennoble",
   "enormous",
   "enough",
@@ -21187,7 +21321,7 @@ var adjectives = [
   "enrapture",
   "enraptured",
   "enrich",
-  "enrichment",
+  "enriching",
   "enterprising",
   "entertain",
   "entertaining",
@@ -21250,7 +21384,6 @@ var adjectives = [
   "excitable",
   "excite",
   "excited",
-  "excitement",
   "exciting",
   "exclusive",
   "exemplar",
@@ -21422,7 +21555,7 @@ var adjectives = [
   "fruitful",
   "frustrated",
   "frustrating",
-  "fulfillment",
+  "fulfilling",
   "full",
   "fumbling",
   "fun",
@@ -21686,7 +21819,6 @@ var adjectives = [
   "improbable",
   "improve",
   "improved",
-  "improvement",
   "improving",
   "impure",
   "inborn",
@@ -21990,7 +22122,7 @@ var adjectives = [
   "mercy",
   "merit",
   "meritorious",
-  "merriment",
+  "merrily",
   "merry",
   "merry-hearted",
   "mesmerize",
@@ -22130,7 +22262,6 @@ var adjectives = [
   "noticeable",
   "nourish",
   "nourishing",
-  "nourishment",
   "nouveau",
   "nouveau-riche",
   "novel",
@@ -22452,7 +22583,6 @@ var adjectives = [
   "redundant",
   "refine",
   "refined",
-  "refinement",
   "reflective",
   "reform",
   "reformed",
@@ -23008,7 +23138,6 @@ var adjectives = [
   "upgradeable",
   "upgraded",
   "uplifting",
-  "upliftment",
   "upscale",
   "usable",
   "useable",
@@ -24254,7 +24383,6 @@ var plants = [
   "jasmine",
   "jewel-orchid",
   "jointed-rush",
-  "judas-tree",
   "jugflower",
   "juneberry",
   "juniper",
@@ -24694,7 +24822,7 @@ var signinGoogleUser = async (ctx) => {
   });
   let resUserBlocked = await checkIfUserBlocked(ctx, payload.email);
   if (resUserBlocked.length != 0) {
-    throw new Error("503", { cause: `This user id is blocked. 
+    throw new Error("401", { cause: `This user id is blocked. 
         You can no longer create an account on Digglu` });
   }
   console.log(`User has been verified as "${payload.email}"`);
@@ -24745,7 +24873,7 @@ var signinGoogleUser = async (ctx) => {
 // src/handlers/allowOnlyUser.js
 var allowOnlyUser = async (ctx) => {
   if (!ctx.user) {
-    throw new Error("401", { cause: "No valid session was found for this user" });
+    throw new Error("401", { cause: "No valid session was found for this user. Please signin again." });
   }
   console.log("Getting user info...");
   console.log("User: ", ctx.user);
@@ -25292,9 +25420,6 @@ var buildPostDetailsPage = async (ctx) => {
 };
 
 // src/server.js
-(0, import_link_preview_js.getLinkPreview)("https://www.youtube.com/watch?v=MejbOFk7H6c").then(
-  (data) => console.log(data)
-);
 var routes = {
   "GET/api/hello": [sayHello],
   "POST/api/signin/google": [signinGoogleUser],

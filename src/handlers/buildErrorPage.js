@@ -44,22 +44,32 @@ let errors =  {
 export const buildErrorPage = (ctx, e) => {
     console.log("Building Error Page", e)
 
-    let errorCode = ctx.req.params.get("code") || errors[e.message] ? e.message : '500'
-    let errorMsg = ctx.req.params.get("msg") || e.cause || errors['500'].cause
+    let errorCode = '500';
+    let errorMsg = errors['500'].cause
+    let errorHaiku = errors['500'].haikus[Math.floor(Math.random() * errors['500'].haikus.length)]
+    
+    if (e) {
+        errorCode = e.message
+        errorMsg = errors[e.message] ? errors[e.message].cause : errors['500'].cause
+        errorHaiku = errors[e.message] ? errors[e.message].haikus[Math.floor(Math.random() * errors[e.message].haikus.length)] : ''
+    }
 
-    let haiku = errors[errorCode] && errors[errorCode].haikus ?
-        errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : '';
+    if (ctx.req.params.get("code") && ctx.req.params.get("msg")) {
+        errorCode = ctx.req.params.get("code")
+        errorMsg = ctx.req.params.get("msg")
+        errorHaiku = errors[errorCode] ? errors[errorCode].haikus[Math.floor(Math.random() * errors[errorCode].haikus.length)] : ''
+    }
     
     console.log(`Error: ${errorCode} - ${errorMsg}`)
     
     ctx.page.title = "ERROR Page"
     ctx.page.descr = "This is the error page"
     ctx.page.html = /*html*/`
-        <article class="prose lg:prose-lg text-center pt-16">
+        <article class="prose lg:prose-lg text-center p-8 pt-16">
             <h1>Error ${errorCode} :( </h1>
             <h3> ${ errorMsg} </h3>
             <small> <i>
-                ${haiku}
+                ${errorHaiku}
             </i></small>
         </article>
     `

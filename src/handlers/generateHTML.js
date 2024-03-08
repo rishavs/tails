@@ -2,11 +2,12 @@ import { drawer } from "../views/drawer"
 import { floaters } from "../views/floaters"
 import { header } from "../views/header"
 import { themeModal } from "../views/themeModal"
+import { freModal } from "../views/freModal"
 
 export const generateHTML = (ctx) => {
     ctx.res.content =     /*html*/`
     <!DOCTYPE html>
-    <html lang="en" data-theme="wintermoon">
+    <html lang="en" data-theme="wintermoon" dir="ltr">
 
         <head>
             <meta charset="UTF-8">
@@ -93,7 +94,8 @@ export const generateHTML = (ctx) => {
                 </div>
             </div>
             <div id = "modals_container">
-                ${themeModal()}
+                ${ themeModal(ctx) }
+                ${ freModal(ctx) }
             </div>
             <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
             <div id = "floaters_container"></div>

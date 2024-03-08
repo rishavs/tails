@@ -19,7 +19,7 @@ export const allowOnlyUser = async (ctx) => {
 
     // ctx.user = resUserDetails[0]
     if (!ctx.user) {
-        throw new Error("401", { cause: "No valid session was found for this user" })
+        throw new Error("401", { cause: "No valid session was found for this user. Please signin again." })
     }
 
     // ------------------------------------------

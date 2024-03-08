@@ -98,3 +98,13 @@ export const NewPostSchema = {
     contentMinLength : 32,
     contentMaxLength : 4096,
 }
+
+export const UserSlugSchema = {
+    minLength : 8,
+    maxLength : 64,
+}
+
+export const UserNameSchema = {
+    minLength : 4,
+    maxLength : 32,
+}
