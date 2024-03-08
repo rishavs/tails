@@ -7,10 +7,6 @@ var NewPostSchema = {
   contentMinLength: 32,
   contentMaxLength: 4096
 };
-var UserSlugSchema = {
-  minLength: 8,
-  maxLength: 64
-};
 
 // src/utils.js
 var parseCookies = (str) => {
@@ -44,22 +40,6 @@ document.getElementById("post_type")?.addEventListener("click", async (e) => {
     post_link_input.required = false;
   }
 });
-var getUserSlugCharCount = async (e) => {
-  let numOfEnteredChars = user_slug_input.value.length;
-  user_slug_input_char_count.innerText = numOfEnteredChars + `/${UserSlugSchema.maxLength} chars`;
-};
-if (user_slug_input) {
-  getUserSlugCharCount();
-  user_slug_input.addEventListener("input", getUserSlugCharCount);
-}
-var getUserNameCharCount = async (e) => {
-  let numOfEnteredChars = user_name_input.value.length;
-  user_name_input_char_count.innerText = numOfEnteredChars + `/${UserSlugSchema.maxLength} chars`;
-};
-if (user_name_input) {
-  getUserNameCharCount();
-  user_name_input.addEventListener("input", getUserNameCharCount);
-}
 document.getElementById("post_link_input")?.addEventListener("input", async (e) => {
   let numOfEnteredChars = post_link_input.value.length;
   post_link_char_count.innerText = numOfEnteredChars + `/${NewPostSchema.linkMaxLength} chars`;

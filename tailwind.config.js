@@ -38,7 +38,8 @@ module.exports = {
             {
                 wintermoon: {
                     ...require("daisyui/src/theming/themes")["winter"],
-                    "primary": "#0284c7",
+                    "info": "#0284c7",
+                    "info-content": "#ffffff",
                     "error": "#f472b6",
                     "warning": "#ead173",
 

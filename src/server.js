@@ -18,6 +18,7 @@ import { validateNewPost } from "./handlers/validateNewPost";
 import { saveNewPost } from "./handlers/saveNewPost";
 import { getLinkData } from "./handlers/getLinkData";
 import { buildPostDetailsPage } from "./handlers/buildPostDetailsPage";
+import { isUserSlugDuplicate } from "./handlers/isUserSlugDuplicate";
 
 // // pass the link directly
 // getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
@@ -27,6 +28,7 @@ import { buildPostDetailsPage } from "./handlers/buildPostDetailsPage";
 let routes = {
     "GET/api/hello"         : [sayHello],
     "POST/api/signin/google": [signinGoogleUser],
+    "POST/api/is-user-slug-dup": [isUserSlugDuplicate],
 
     "GET/"             : [buildAboutPage, generateHTML],
     "GET/search"       : [buildAboutPage, generateHTML],

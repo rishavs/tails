@@ -16,6 +16,12 @@ const connectToPlanetScale = (ctx) => {
     return connect(DBConfig)
 }
 
+export const checkIfUserSlugExistsinDB = async (ctx, str) => {
+    let conn = connectToPlanetScale(ctx)
+    let result = await conn.execute('select slug from users where slug = :slug limit 1', {slug : str})
+    return result.rows
+}
+
 export const checkIfUserBlocked = async (ctx, id) => {
     let conn = connectToPlanetScale(ctx)
     let result =  await conn.execute(
