@@ -15,7 +15,7 @@ export const freModal = (ctx) => {
                 <button class="btn btn-square absolute right-6 top-6">✕</button>
             </form>
 
-            <form method="" id="user_details_form" class="w-full flex flex-col gap-4">
+            <form id="user_details_form" class="w-full flex flex-col gap-4" action="/api/update-user-details" method="post" enctype="multipart/form-data">
                 <h3 class="font-bold text-lg text-center">Welcome to Digglu!</h3>
                 <p class="">Let's set you up with your user details.</p>
 
@@ -112,6 +112,9 @@ export const freModal = (ctx) => {
                     </label>
 
                 </div>
+
+                <!-- Add a hidden field which captures the current url which can then be used to redirect back to this page -->
+                <input type="hidden" name="redirect" value="${ctx.req.url.pathname}" />
                 
                 <button class="btn btn-info self-end">Save</button>
             </form>
@@ -177,6 +180,13 @@ export const freModal = (ctx) => {
 
             user_thumb_input.addEventListener("change", async(e) => {
                 let file = user_thumb_input.files[0];
+                if (file.size > 1024 * 1024) {
+                    user_thumb_input.setCustomValidity("Image file size should be less than 1 Mb");
+                    user_thumb_input.reportValidity();
+
+                    user_thumb_input.value = "";
+                    return;
+                }
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     user_thumb_img.src = e.target.result;
@@ -197,16 +207,21 @@ export const freModal = (ctx) => {
             user_name_input.addEventListener("input", updateNameText)
 
             user_details_form.addEventListener("submit", (event) => {
+
                 if (!user_name_input.checkValidity()) {
-                    event.preventDefault(); // Prevent form submission
+                    event.preventDefault(); // Prevent the default form submission
                     user_name_input.focus(); // Set focus back to the input field for correction
+                    return; // Stop further execution
                 }
                 if (!user_slug_input.checkValidity()) {
-                    event.preventDefault(); // Prevent form submission
+                    event.preventDefault(); // Prevent the default form submission
                     user_slug_input.focus(); // Set focus back to the input field for correction
+                    return; // Stop further execution
                 }
 
+               
             });
+
             </script>
         </div>
     </dialog>

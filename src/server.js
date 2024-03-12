@@ -19,6 +19,7 @@ import { saveNewPost } from "./handlers/saveNewPost";
 import { getLinkData } from "./handlers/getLinkData";
 import { buildPostDetailsPage } from "./handlers/buildPostDetailsPage";
 import { isUserSlugDuplicate } from "./handlers/isUserSlugDuplicate";
+import { updateUserDetails } from "./handlers/updateUserDetails";
 
 // // pass the link directly
 // getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
@@ -29,6 +30,7 @@ let routes = {
     "GET/api/hello"         : [sayHello],
     "POST/api/signin/google": [signinGoogleUser],
     "POST/api/is-user-slug-dup": [isUserSlugDuplicate],
+    "POST/api/update-user-details": [setHeaders, updateUserDetails], // TODO - change to updateUserDetails
 
     "GET/"             : [buildAboutPage, generateHTML],
     "GET/search"       : [buildAboutPage, generateHTML],

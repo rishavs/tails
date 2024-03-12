@@ -17793,6 +17793,17 @@ var require_build = __commonJS({
   }
 });
 
+// src/handlers/setHeaders.js
+var setHeaders = (ctx) => {
+  if (ctx.req.url.pathname.startsWith("/api")) {
+    ctx.res.headers.append("content-type", "application/json;charset=UTF-8");
+    ctx.res.headers.append("Powered-by", "API: Pika Pika Pika Choooo");
+  } else {
+    ctx.res.headers.append("Powered-by", "VIEW: Pika Pika Pika Choooo");
+    ctx.res.headers.append("Content-Type", "text/html; charset=UTF-8");
+  }
+};
+
 // src/utils.js
 var parseCookies = (str) => {
   if (!str || str == "")
@@ -18242,7 +18253,7 @@ var freModal = (ctx) => {
                 <button class="btn btn-square absolute right-6 top-6">\u2715</button>
             </form>
 
-            <form method="" id="user_details_form" class="w-full flex flex-col gap-4">
+            <form id="user_details_form" class="w-full flex flex-col gap-4" action="/api/update-user-details" method="post" enctype="multipart/form-data">
                 <h3 class="font-bold text-lg text-center">Welcome to Digglu!</h3>
                 <p class="">Let's set you up with your user details.</p>
 
@@ -18339,6 +18350,9 @@ var freModal = (ctx) => {
                     </label>
 
                 </div>
+
+                <!-- Add a hidden field which captures the current url which can then be used to redirect back to this page -->
+                <input type="hidden" name="redirect" value="${ctx.req.url.pathname}" />
                 
                 <button class="btn btn-info self-end">Save</button>
             </form>
@@ -18404,6 +18418,13 @@ var freModal = (ctx) => {
 
             user_thumb_input.addEventListener("change", async(e) => {
                 let file = user_thumb_input.files[0];
+                if (file.size > 1024 * 1024) {
+                    user_thumb_input.setCustomValidity("Image file size should be less than 1 Mb");
+                    user_thumb_input.reportValidity();
+
+                    user_thumb_input.value = "";
+                    return;
+                }
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     user_thumb_img.src = e.target.result;
@@ -18424,16 +18445,21 @@ var freModal = (ctx) => {
             user_name_input.addEventListener("input", updateNameText)
 
             user_details_form.addEventListener("submit", (event) => {
+
                 if (!user_name_input.checkValidity()) {
-                    event.preventDefault(); // Prevent form submission
+                    event.preventDefault(); // Prevent the default form submission
                     user_name_input.focus(); // Set focus back to the input field for correction
+                    return; // Stop further execution
                 }
                 if (!user_slug_input.checkValidity()) {
-                    event.preventDefault(); // Prevent form submission
+                    event.preventDefault(); // Prevent the default form submission
                     user_slug_input.focus(); // Set focus back to the input field for correction
+                    return; // Stop further execution
                 }
 
+               
             });
+
             <\/script>
         </div>
     </dialog>
@@ -19127,7 +19153,7 @@ var check_key_type_default = checkKeyType;
 
 // node_modules/jose/dist/browser/lib/validate_crit.js
 function validateCrit(Err, recognizedDefault, recognizedOption, protectedHeader, joseHeader) {
-  if (joseHeader.crit !== void 0 && protectedHeader.crit === void 0) {
+  if (joseHeader.crit !== void 0 && protectedHeader?.crit === void 0) {
     throw new Err('"crit" (Critical) Header Parameter MUST be integrity protected');
   }
   if (!protectedHeader || protectedHeader.crit === void 0) {
@@ -19663,7 +19689,7 @@ function isCloudflareWorkers() {
 var USER_AGENT;
 if (typeof navigator === "undefined" || !navigator.userAgent?.startsWith?.("Mozilla/5.0 ")) {
   const NAME = "jose";
-  const VERSION = "v5.2.2";
+  const VERSION = "v5.2.3";
   USER_AGENT = `${NAME}/${VERSION}`;
 }
 var RemoteJWKSet = class extends LocalJWKSet {
@@ -25568,11 +25594,39 @@ var isUserSlugDuplicate = async (ctx) => {
   }
 };
 
+// src/handlers/updateUserDetails.js
+var updateUserDetails = async (ctx) => {
+  const formData = await ctx.req.raw.formData();
+  for (let [key, value] of formData.entries()) {
+    console.log("KEY = ", key, ", VALUE = ", value);
+  }
+  const userName = formData.get("name");
+  const userSlug = formData.get("slug");
+  const userImage = formData.get("thumb");
+  const cloudflareFormData = new FormData();
+  cloudflareFormData.append("file", userImage);
+  const cloudflareResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ctx.env.CF_ACCOUNT_ID}/images/v1`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${ctx.env.CF_IMAGES_API_TOKEN}`
+    },
+    body: cloudflareFormData
+  });
+  if (!cloudflareResponse.ok) {
+    throw new Error(`Cloudflare Images API error: ${cloudflareResponse.statusText}`);
+  }
+  const cloudflareResponseContent = await cloudflareResponse.json();
+  ctx.res.content = JSON.stringify({ message: "User details updated successfully", details: cloudflareResponseContent });
+  ctx.res.headers.set("Content-Type", "application/json");
+};
+
 // src/server.js
 var routes = {
   "GET/api/hello": [sayHello],
   "POST/api/signin/google": [signinGoogleUser],
   "POST/api/is-user-slug-dup": [isUserSlugDuplicate],
+  "POST/api/update-user-details": [setHeaders, updateUserDetails],
+  // TODO - change to updateUserDetails
   "GET/": [buildAboutPage, generateHTML],
   "GET/search": [buildAboutPage, generateHTML],
   "GET/p/new": [allowOnlyUser, buildNewPostPage, generateHTML],
