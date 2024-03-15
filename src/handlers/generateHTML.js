@@ -3,6 +3,7 @@ import { floaters } from "../views/floaters"
 import { header } from "../views/header"
 import { themeModal } from "../views/themeModal"
 import { freModal } from "../views/freModal"
+import { toasts } from "../views/toasts"
 
 export const generateHTML = (ctx) => {
     ctx.res.content =     /*html*/`
@@ -97,7 +98,9 @@ export const generateHTML = (ctx) => {
                 ${ themeModal(ctx) }
                 ${ freModal(ctx) }
             </div>
-            <div id = "toasts_container" class="toast toast-top toast-end z-100"></div>
+            <div id = "toasts_container" class="toast toast-top toast-end mt-16 z-100">
+                ${ toasts(ctx)}
+            </div>
             <div id = "floaters_container"></div>
         </body>
     </html>

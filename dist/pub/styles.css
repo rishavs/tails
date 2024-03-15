@@ -4843,6 +4843,22 @@ input.tab:checked + .tab-content,
     var(--togglehandleborder);
 }
 
+.alert-success {
+  border-color: var(--fallback-su,oklch(var(--su)/0.2));
+  --tw-text-opacity: 1;
+  color: var(--fallback-suc,oklch(var(--suc)/var(--tw-text-opacity)));
+  --alert-bg: var(--fallback-su,oklch(var(--su)/1));
+  --alert-bg-mix: var(--fallback-b1,oklch(var(--b1)/1));
+}
+
+.alert-error {
+  border-color: var(--fallback-er,oklch(var(--er)/0.2));
+  --tw-text-opacity: 1;
+  color: var(--fallback-erc,oklch(var(--erc)/var(--tw-text-opacity)));
+  --alert-bg: var(--fallback-er,oklch(var(--er)/1));
+  --alert-bg-mix: var(--fallback-b1,oklch(var(--b1)/1));
+}
+
 .avatar-group :where(.avatar) {
   overflow: hidden;
   border-radius: 9999px;
@@ -6779,6 +6795,10 @@ html:has(.drawer-toggle:checked) {
   margin-bottom: 0.5rem;
 }
 
+.mt-16 {
+  margin-top: 4rem;
+}
+
 .mt-2 {
   margin-top: 0.5rem;
 }
@@ -6966,6 +6986,10 @@ html:has(.drawer-toggle:checked) {
 
 .self-end {
   align-self: flex-end;
+}
+
+.justify-self-end {
+  justify-self: end;
 }
 
 .overflow-hidden {
@@ -7287,6 +7311,35 @@ select {
 
 iframe {
   color-scheme: normal;
+}
+
+@keyframes progressAnimation {
+  0% {
+    width: 0
+  }
+
+  100% {
+    width: 100%
+  }
+}
+
+.animate-progress {
+  animation: progressAnimation 3s linear
+}
+
+@keyframes autoHideElement {
+  0% {
+    opacity: 1
+  }
+
+  100% {
+    opacity: 0;
+    display: none;
+  }
+}
+
+.auto-hide {
+  animation: autoHideElement 1s 3s forwards
 }
 
 @media (min-width: 640px) {

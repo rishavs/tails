@@ -9,3 +9,18 @@ select {
 iframe {
     color-scheme: normal;
 }
+
+@keyframes progressAnimation {
+    0% { width: 0}
+    100% { width: 100% } 
+}
+.animate-progress { animation: progressAnimation 3s linear}
+
+@keyframes autoHideElement {
+    0% { opacity: 1 }
+    100% {
+        opacity: 0;
+        display: none;
+    }
+}
+.auto-hide {animation: autoHideElement 1s 3s forwards}
