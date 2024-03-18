@@ -22,6 +22,16 @@ export const checkIfUserSlugExistsinDB = async (ctx, str) => {
     return result.rows
 }
 
+export const updateUserDetailsInDB = async (ctx) => {
+    let conn = connectToPlanetScale(ctx)
+    let result = await conn.execute(`update users set name = ?, slug = ?, thumb = ? where id = ?`,
+    [ctx.user.name, ctx.user.slug, ctx.user.thumb, ctx.user.id])
+    if (result.rowsAffected != 1) {
+        throw new Error("503", { cause: "Unable to update user details in DB" })
+    }
+    return true
+}
+
 export const checkIfUserBlocked = async (ctx, id) => {
     let conn = connectToPlanetScale(ctx)
     let result =  await conn.execute(

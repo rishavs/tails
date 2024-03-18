@@ -20160,6 +20160,17 @@ var checkIfUserSlugExistsinDB = async (ctx, str) => {
   let result = await conn.execute("select slug from users where slug = :slug limit 1", { slug: str });
   return result.rows;
 };
+var updateUserDetailsInDB = async (ctx) => {
+  let conn = connectToPlanetScale(ctx);
+  let result = await conn.execute(
+    `update users set name = ?, slug = ?, thumb = ? where id = ?`,
+    [ctx.user.name, ctx.user.slug, ctx.user.thumb, ctx.user.id]
+  );
+  if (result.rowsAffected != 1) {
+    throw new Error("503", { cause: "Unable to update user details in DB" });
+  }
+  return true;
+};
 var checkIfUserBlocked = async (ctx, id) => {
   let conn = connectToPlanetScale(ctx);
   let result = await conn.execute(
@@ -25648,24 +25659,40 @@ var updateUserDetails = async (ctx) => {
   for (let [key, value] of formData.entries()) {
     console.log("KEY = ", key, ", VALUE = ", value);
   }
-  const userName = formData.get("name");
-  const userSlug = formData.get("slug");
-  const userImage = formData.get("thumb");
-  const cloudflareFormData = new FormData();
-  cloudflareFormData.append("file", userImage);
-  const cloudflareResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ctx.env.CF_ACCOUNT_ID}/images/v1`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${ctx.env.CF_IMAGES_API_TOKEN}`
-    },
-    body: cloudflareFormData
-  });
-  if (!cloudflareResponse.ok) {
-    throw new Error(`Cloudflare Images API error: ${cloudflareResponse.statusText}`);
+  if (formData.has("name")) {
+    ctx.user.name = formData.get("name");
   }
-  const cloudflareResponseContent = await cloudflareResponse.json();
-  ctx.res.content = JSON.stringify({ message: "User details updated successfully", details: cloudflareResponseContent });
-  ctx.res.headers.set("Content-Type", "application/json");
+  if (formData.has("slug")) {
+    ctx.user.slug = formData.get("slug");
+  }
+  if (formData.has("thumb")) {
+    let thumb = formData.get("thumb");
+    if (thumb.size > 1024 * 1024) {
+      throw new Error(400, { cause: "Image size exceeds 1MB" });
+    }
+    if (["image/jpeg", "image/png", "image/webp"].includes(thumb.type) == false) {
+      throw new Error(400, { cause: "Invalid image type" });
+    }
+    const CFFormData = new FormData();
+    CFFormData.append("file", thumb);
+    const CFResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ctx.env.CF_ACCOUNT_ID}/images/v1`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${ctx.env.CF_IMAGES_API_TOKEN}`
+      },
+      body: CFFormData
+    });
+    if (!CFResp.ok) {
+      throw new Error(`Cloudflare Images API error: ${CFResp.statusText}`);
+    }
+    const CFRespData = await CFResp.json();
+    console.log("Cloudflare Images API response: ", CFRespData);
+    let imgUrl = CFRespData.result.variants.find((v) => v.endsWith("userthumb"));
+    ctx.user.thumb = imgUrl;
+  }
+  let resUpdateUserDetails = await updateUserDetailsInDB(ctx);
+  ctx.res.status = 302;
+  ctx.res.headers.append("Location", formData.get("redirect") || "/");
 };
 
 // src/server.js
